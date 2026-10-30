@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Production output
+dist/
+*.tsbuildinfo
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Mount & local storage folders
+resources/
+public/models/

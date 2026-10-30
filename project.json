@@ -1,0 +1,57 @@
+{
+  "name": "papikapi-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/papikapi-api/src",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsc -p tsconfig.json",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx watch src/main.ts",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "docker:build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose build",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "docker:up": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose up -d",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "docker:down": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose down",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "docker:logs": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose logs -f",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "test:bruno": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "../../../node_modules/.bin/bru run -r --env local",
+        "cwd": "apps/papikapi-api/bruno"
+      }
+    }
+  }
+}

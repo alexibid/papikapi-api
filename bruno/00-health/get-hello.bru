@@ -1,0 +1,17 @@
+meta {
+  name: Get Hello World (v1)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/hello
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq ok
+  res.body.message: eq Hello World from Papikapi API!
+}

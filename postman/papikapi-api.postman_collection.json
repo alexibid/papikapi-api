@@ -1,0 +1,41 @@
+{
+  "info": {
+    "_postman_id": "b3e0c0a1-7788-4bf8-9d22-papikapi0001",
+    "name": "Papikapi API",
+    "description": "Papikapi API Collection for Postman testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00. Health & Hello",
+      "item": [
+        {
+          "name": "Get Hello World (Root)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Hello World (v1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hello",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hello"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "papikapi-api",
+  "version": "0.1.0",
+  "description": "Papikapi API - Generative 3D Papercraft Service",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "dev": "tsx watch src/main.ts",
+    "test:bruno": "../../node_modules/.bin/bru run -r bruno --env local"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "@usebruno/cli": "^4.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}
