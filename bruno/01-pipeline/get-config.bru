@@ -1,0 +1,17 @@
+meta {
+  name: Get Pipeline Config
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/pipeline/config
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.workspace: isDefined
+  res.body.pipeline_stages: isDefined
+}

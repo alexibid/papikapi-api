@@ -1,0 +1,17 @@
+meta {
+  name: Search Manifests by Prompt
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v1/manifests?query=minecraft
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.total: gt 0
+  res.body.items.length: gt 0
+}

@@ -14,4 +14,9 @@ export class AppController {
   getHello(): { message: string; timestamp: string; status: string } {
     return this.appService.getHello();
   }
+
+  @Get(['api/v1/health', 'api/health'])
+  getHealth(): { status: string; uptime: number } {
+    return { status: 'ok', uptime: process.uptime() };
+  }
 }

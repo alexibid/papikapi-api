@@ -1,0 +1,17 @@
+meta {
+  name: Get Manifests List
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/manifests
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.total: gt 0
+  res.body.items: isDefined
+}

@@ -7,6 +7,7 @@ COPY package.json ./
 RUN npm install --include=dev
 
 COPY tsconfig.json ./
+COPY pipeline.json ./
 COPY src ./src
 
 RUN npm run build
@@ -23,6 +24,7 @@ COPY package.json ./
 RUN npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist
+COPY pipeline.json ./
 
 # Create storage mount points with node permissions
 RUN mkdir -p /app/resources /app/public/models && chown -R node:node /app

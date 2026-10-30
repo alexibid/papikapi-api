@@ -1,0 +1,18 @@
+meta {
+  name: Get Manifest by ID (alex)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/manifests/alex
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq alex
+  res.body.totalSeconds: gt 0
+  res.body.stages.length: gt 0
+}

@@ -1,0 +1,20 @@
+meta {
+  name: Get Model Telemetry (Partial Times & Metrics)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/manifests/alex/telemetry
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq alex
+  res.body.totalSeconds: gt 0
+  res.body.stagesCount: gt 0
+  res.body.stages: isDefined
+  res.body.paths.mesh: isDefined
+}

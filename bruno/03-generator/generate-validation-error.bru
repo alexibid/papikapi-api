@@ -1,0 +1,21 @@
+meta {
+  name: Generate Alternatives - Validation Error (Empty Prompt)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/generator/alternatives
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "prompt": ""
+  }
+}
+
+assert {
+  res.status: eq 400
+}

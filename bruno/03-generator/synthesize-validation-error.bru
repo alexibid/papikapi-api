@@ -1,0 +1,22 @@
+meta {
+  name: Synthesize - Validation Error (Invalid Pick)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/generator/synthesize
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "darth",
+    "pick": 99
+  }
+}
+
+assert {
+  res.status: eq 400
+}

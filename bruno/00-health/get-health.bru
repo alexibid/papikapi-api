@@ -1,0 +1,16 @@
+meta {
+  name: Get Health (v1 & legacy)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/health
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq ok
+}

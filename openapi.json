@@ -1,0 +1,608 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "AppController_getRoot",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/api/v1/hello": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "AppController_getHealth[0]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "AppController_getHealth[1]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/api/v1/pipeline/config": {
+      "get": {
+        "operationId": "PipelineController_getConfig[0]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pipeline"
+        ]
+      }
+    },
+    "/api/pipeline": {
+      "get": {
+        "operationId": "PipelineController_getConfig[1]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pipeline"
+        ]
+      }
+    },
+    "/api/v1/pipeline/stages": {
+      "get": {
+        "operationId": "PipelineController_getStages",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pipeline"
+        ]
+      }
+    },
+    "/api/v1/models": {
+      "get": {
+        "operationId": "ModelsController_findAll[0]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      }
+    },
+    "/api/catalogue": {
+      "get": {
+        "operationId": "ModelsController_findAll[1]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      }
+    },
+    "/api/v1/models/sync": {
+      "post": {
+        "operationId": "ModelsController_sync",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      }
+    },
+    "/api/catalogue/sync": {
+      "get": {
+        "operationId": "ModelsController_syncLegacy[0]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      }
+    },
+    "/api/creator/sync": {
+      "get": {
+        "operationId": "ModelsController_syncLegacy[1]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      }
+    },
+    "/api/creator/info": {
+      "get": {
+        "operationId": "ModelsController_findOneLegacy",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      }
+    },
+    "/api/creator/sheet": {
+      "get": {
+        "operationId": "ModelsController_getSheetLegacy",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      }
+    },
+    "/api/creator/delete": {
+      "post": {
+        "operationId": "ModelsController_removeLegacy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      }
+    },
+    "/api/v1/models/{name}": {
+      "get": {
+        "operationId": "ModelsController_findOne",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      },
+      "delete": {
+        "operationId": "ModelsController_remove",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      }
+    },
+    "/api/v1/models/{name}/sheet": {
+      "get": {
+        "operationId": "ModelsController_getSheet",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      }
+    },
+    "/api/v1/models/{name}/mesh": {
+      "get": {
+        "operationId": "ModelsController_getMesh",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Models"
+        ]
+      }
+    },
+    "/api/v1/generator/alternatives": {
+      "post": {
+        "operationId": "GeneratorController_generateAlternativesV1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Generator"
+        ]
+      }
+    },
+    "/api/v1/generator/synthesize": {
+      "post": {
+        "operationId": "GeneratorController_synthesizeV1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Generator"
+        ]
+      }
+    },
+    "/api/v1/generator/progress/{name}/latest": {
+      "get": {
+        "operationId": "GeneratorController_getLatestProgress",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Generator"
+        ]
+      }
+    },
+    "/api/v1/generator/progress/{name}": {
+      "get": {
+        "operationId": "GeneratorController_streamProgressV1",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Generator"
+        ]
+      }
+    },
+    "/api/creator/generate": {
+      "post": {
+        "operationId": "GeneratorController_generateLegacy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Generator"
+        ]
+      }
+    },
+    "/api/creator/pick": {
+      "post": {
+        "operationId": "GeneratorController_pickLegacy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Generator"
+        ]
+      }
+    },
+    "/api/creator/progress": {
+      "get": {
+        "operationId": "GeneratorController_streamProgressLegacy",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Generator"
+        ]
+      }
+    },
+    "/api/v1/manifests": {
+      "get": {
+        "operationId": "ManifestsController_findAll",
+        "parameters": [
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "description": "Search term in prompt",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List model manifests with search and filters",
+        "tags": [
+          "manifests"
+        ]
+      }
+    },
+    "/api/v1/manifests/analytics/times": {
+      "get": {
+        "operationId": "ManifestsController_getAnalyticsTimes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get stage timing analytics and aggregates across all models",
+        "tags": [
+          "manifests"
+        ]
+      }
+    },
+    "/api/v1/manifests/sync": {
+      "post": {
+        "operationId": "ManifestsController_syncFromDisk",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Sync and import all manifests from models directory into database",
+        "tags": [
+          "manifests"
+        ]
+      }
+    },
+    "/api/v1/manifests/{id}": {
+      "get": {
+        "operationId": "ManifestsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get full manifest by model ID",
+        "tags": [
+          "manifests"
+        ]
+      }
+    },
+    "/api/v1/manifests/{id}/telemetry": {
+      "get": {
+        "operationId": "ManifestsController_getTelemetry",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get detailed timing breakdown and metrics for a specific model",
+        "tags": [
+          "manifests"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Papikapi API",
+    "description": "Generative 3D Papercraft Service & Model Catalogue API",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "health",
+      "description": ""
+    },
+    {
+      "name": "pipeline",
+      "description": ""
+    },
+    {
+      "name": "models",
+      "description": ""
+    },
+    {
+      "name": "generator",
+      "description": ""
+    },
+    {
+      "name": "manifests",
+      "description": ""
+    }
+  ],
+  "servers": [],
+  "components": {
+    "schemas": {}
+  }
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Get All Models
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/models
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}

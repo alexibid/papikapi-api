@@ -1,0 +1,16 @@
+meta {
+  name: Get Model Progress Latest (JSON)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/generator/progress/darth/latest
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.model: eq darth
+}

@@ -8,12 +8,19 @@ services:
     restart: unless-stopped
     ports:
       - "4505:4505"
+      - "4502:4505"
+      - "4500:4505"
     environment:
       - PORT=4505
       - NODE_ENV=production
+      - PAPIKAPI_RESOURCES_DIR=/app/resources
+      - PAPIKAPI_MODELS_DIR=/app/public/models
+      - PAPIKAPI_PIPELINE_PATH=/app/pipeline.json
+      - PAPIKAPI_DATABASE_PATH=/app/resources/papikapi.db
     volumes:
-      - ../papikapi-studio/resources:/app/resources
-      - ../papikapi-studio/public/models:/app/public/models
+      - ./resources:/app/resources
+      - ./public/models:/app/public/models
+      - ./pipeline.json:/app/pipeline.json
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:4505/api/v1/hello').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 10s

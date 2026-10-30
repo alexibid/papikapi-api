@@ -1,0 +1,18 @@
+meta {
+  name: Stream Model Progress (SSE)
+  type: http
+  seq: 4
+  tags: [
+    stream
+  ]
+}
+
+get {
+  url: {{baseUrl}}/api/v1/generator/progress/darth
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}

@@ -1,0 +1,17 @@
+meta {
+  name: Get Stage Analytics & Times
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/manifests/analytics/times
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.stageAggregates.length: gt 0
+  res.body.topModelsByDuration.length: gt 0
+}

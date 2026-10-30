@@ -1,0 +1,17 @@
+meta {
+  name: Get OpenAPI Docs Spec
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/docs-json
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.openapi: isDefined
+  res.body.info.title: eq Papikapi API
+}
