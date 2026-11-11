@@ -1,18 +1,32 @@
 meta {
-  name: Get Manifest by ID (alex)
+  name: Full manifest of one figure
   type: http
-  seq: 2
+  seq: 6
 }
 
 get {
-  url: {{baseUrl}}/api/v1/manifests/alex
+  url: {{baseUrl}}/api/v1/manifests/y8tt88g6
   body: none
   auth: none
 }
 
 assert {
   res.status: eq 200
-  res.body.id: eq alex
-  res.body.totalSeconds: gt 0
-  res.body.stages.length: gt 0
+  res.body.name.pt: eq Alex
+  res.body.status: eq DONE
+  res.body.steps.length: eq 14
+  res.body.totals.spentCostUsd: gt 0
+  res.body.totals.runs: gt 14
+  res.body.history.length: gt 14
+  res.body.figure.mode: eq boxes
+  res.body.files.length: gt 3
+  res.body.versions.updatedWith: eq 0.1.0
+}
+
+tests {
+  test("steps follow the pipeline order", function () {
+    const ids = res.getBody().steps.map((step) => step.stageId);
+    expect(ids[0]).to.equal("s1-step-1");
+    expect(ids[ids.length - 1]).to.equal("s5-step-1");
+  });
 }

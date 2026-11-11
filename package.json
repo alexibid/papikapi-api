@@ -8,19 +8,46 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
     "dev": "tsx watch src/main.ts",
+    "figure": "tsx scripts/shared/cli/stage-orchestrator.ts --force",
+    "stages": "tsx scripts/shared/cli/stage-orchestrator.ts",
+    "stage:1": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 1",
+    "stage:1:step:1": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 1 --step s1-step-1",
+    "stage:1:step:2": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 1 --step s1-step-2",
+    "stage:1:step:3": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 1 --step s1-step-3",
+    "stage:2": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 2",
+    "stage:2:step:1": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 2 --step s2-step-1",
+    "stage:2:step:2": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 2 --step s2-step-2",
+    "stage:3": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 3",
+    "stage:3:step:1": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-1",
+    "stage:3:step:2": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-2",
+    "stage:3:step:3": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-3",
+    "stage:3:step:4": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-4",
+    "stage:3:step:5": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-5",
+    "stage:3:step:6": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-6",
+    "stage:4": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 4",
+    "stage:4:step:1": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 4 --step s4-step-1",
+    "stage:4:step:2": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 4 --step s4-step-2",
+    "stage:5": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 5",
+    "stage:5:step:1": "tsx scripts/shared/cli/stage-orchestrator.ts --stage 5 --step s5-step-1",
+    "publish": "tsx scripts/shared/cli/publish-figures.ts --all",
+    "publish:figures": "tsx scripts/shared/cli/publish-figures.ts",
+    "test:scripts": "vitest run --config vitest.scripts.config.mts",
     "test:bruno": "../../node_modules/.bin/bru run -r bruno --env local"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.3.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/swagger": "^11.0.0",
     "better-sqlite3": "^11.8.1",
     "drizzle-orm": "^0.39.3",
+    "pdf-lib": "^1.17.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.0",
     "sharp": "^0.33.5",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "tsx": "^4.19.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",
@@ -28,7 +55,7 @@
     "@types/node": "^24.0.0",
     "@usebruno/cli": "^4.3.0",
     "drizzle-kit": "^0.30.4",
-    "tsx": "^4.19.0",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
   }
 }

@@ -1,0 +1,88 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { ManifestManager } from '../shared/common/manifest-manager.js';
+import { PipelineConfigLoader } from '../shared/common/pipeline-config.js';
+import { ProgressHub } from '../shared/common/progress-hub.js';
+import { WorkspacePaths } from '../shared/common/workspace-paths.js';
+import { AssemblyBuilder } from './assembly-builder.js';
+import { FaceColourAssigner } from './face-colour-assigner.js';
+import { GlbColourReader } from './glb-colour-reader.js';
+import type {
+  AssemblySource,
+  AssemblyStepDefinition,
+  Stage5Response,
+} from './interfaces/assembly.interface.js';
+
+const MM_PER_METRE = 1000;
+
+export class AssemblyGenerator {
+  private static readonly stepId = 's5-step-1';
+
+  public static async execute(modelName: string): Promise<Stage5Response> {
+    const step = PipelineConfigLoader.getStep(this.stepId) as unknown as AssemblyStepDefinition;
+    const resourceDir = WorkspacePaths.resourcePath(modelName);
+    const stageDir = join(resourceDir, step.stage_dir);
+    const publicDir = WorkspacePaths.modelPath(modelName);
+    mkdirSync(stageDir, { recursive: true });
+    mkdirSync(publicDir, { recursive: true });
+
+    const startMessage = step.messages.start.replace('{model}', modelName);
+    console.log(`\n  \x1b[35m${startMessage}\x1b[0m`);
+    ProgressHub.report(modelName, this.stepId, startMessage);
+
+    const start = Date.now();
+    const rawSource = JSON.parse(
+      readFileSync(join(resourceDir, step.inputs.stage_dir, step.inputs.net_resource), 'utf8'),
+    ) as AssemblySource;
+    const source: AssemblySource = {
+      ...rawSource,
+      pieces: rawSource.pieces.filter((piece) => !piece.isPlinth),
+    };
+    const textureCandidates = [
+      join(resourceDir, step.inputs.texture_stage_dir, step.inputs.texture_model),
+      join(resourceDir, step.inputs.texture_stage_dir, 'step-4-texturize.glb'),
+      join(resourceDir, 'stage-3', 'step-5-plinth.glb'),
+    ];
+    const texturePath = textureCandidates.find((c) => existsSync(c)) ?? textureCandidates[0];
+    const triangles = await GlbColourReader.read(
+      texturePath,
+      source.meshScale * MM_PER_METRE,
+    );
+    const colours = FaceColourAssigner.assign(AssemblyBuilder.faceGeometries(source), triangles);
+    const document = AssemblyBuilder.compose(
+      source,
+      AssemblyBuilder.faceGeometries(source),
+      colours,
+      step.parameters,
+    );
+
+    const assemblyJson = JSON.stringify(document);
+    const outputPath = join(stageDir, step.outputs.assembly_resource);
+    writeFileSync(outputPath, assemblyJson, 'utf8');
+    const publicPath = join(publicDir, (step.outputs as any).assembly_public || 'assembly.json');
+    writeFileSync(publicPath, assemblyJson, 'utf8');
+    const seconds = Math.round(((Date.now() - start) / 1000) * 100) / 100;
+
+    const completedMessage = step.messages.completed
+      .replace('{model}', modelName)
+      .replace('{pieces}', String(document.checks.pieces))
+      .replace('{hinges}', String(document.checks.hinges))
+      .replace('{duration}', String(seconds));
+    console.log(`  \x1b[32m${completedMessage}\x1b[0m\n`);
+    ProgressHub.report(modelName, this.stepId, completedMessage);
+
+    ManifestManager.writeStepResult(modelName, this.stepId, {
+      status: step.manifest_contract.status,
+      seconds,
+      costUsd: 0.0,
+      costNote: step.manifest_contract.costNote,
+      metrics: { ...document.checks },
+      data: {
+        source: join(step.inputs.stage_dir, step.inputs.net_resource),
+        assemblyResource: step.outputs.assembly_resource,
+      },
+    });
+
+    return { name: modelName, outputPath, seconds };
+  }
+}

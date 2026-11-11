@@ -1,0 +1,23 @@
+meta {
+  name: Most expensive figures first
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/manifests?sort=cost&order=desc&limit=5
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.items.length: eq 5
+}
+
+tests {
+  test("sorted by cost, highest first", function () {
+    const costs = res.getBody().items.map((item) => item.costUsd);
+    expect(costs).to.eql([...costs].sort((a, b) => b - a));
+  });
+}

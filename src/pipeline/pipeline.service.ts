@@ -1,6 +1,8 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { readFileSync, existsSync } from 'node:fs';
-import { ApiConfigService } from '../config/config.service.js';
+import { eq } from 'drizzle-orm';
+import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import { DRIZZLE_DB } from '../database/database.provider.js';
+import * as schema from '../database/schema.js';
 
 export interface PipelineStep {
   id: string;
@@ -43,25 +45,58 @@ export interface PipelineConfig {
 @Injectable()
 export class PipelineService implements OnModuleInit {
   private config: PipelineConfig | null = null;
+  private currentVersionId: string | null = null;
 
-  constructor(@Inject(ApiConfigService) private readonly configService: ApiConfigService) {}
+  constructor(
+    @Inject(DRIZZLE_DB) private readonly db: BetterSQLite3Database<typeof schema>,
+  ) {}
 
   onModuleInit(): void {
     this.loadConfig();
   }
 
-  public loadConfig(): PipelineConfig {
-    const filePath = this.configService.pipelinePath;
-    if (!existsSync(filePath)) {
-      throw new Error(`Pipeline config file not found at: ${filePath}`);
+  public loadConfig(requestedVersion?: string): PipelineConfig {
+    let row: typeof schema.pipelineVersionsTable.$inferSelect | undefined;
+
+    if (requestedVersion) {
+      row = this.db
+        .select()
+        .from(schema.pipelineVersionsTable)
+        .where(eq(schema.pipelineVersionsTable.id, requestedVersion))
+        .get();
+    } else {
+      const activeSetting = this.db
+        .select()
+        .from(schema.systemSettingsTable)
+        .where(eq(schema.systemSettingsTable.key, 'active_pipeline_version'))
+        .get();
+      const activeVersion = activeSetting?.value;
+      if (activeVersion) {
+        row = this.db
+          .select()
+          .from(schema.pipelineVersionsTable)
+          .where(eq(schema.pipelineVersionsTable.id, activeVersion))
+          .get();
+      }
+      if (!row) {
+        row = this.db
+          .select()
+          .from(schema.pipelineVersionsTable)
+          .where(eq(schema.pipelineVersionsTable.isActive, 1))
+          .get();
+      }
+    }
+
+    if (!row) {
+      throw new Error(`Pipeline configuration not found in database (version: ${requestedVersion ?? 'active'})`);
     }
 
     try {
-      const raw = readFileSync(filePath, 'utf8');
-      this.config = JSON.parse(raw) as PipelineConfig;
+      this.config = JSON.parse(row.config) as PipelineConfig;
+      this.currentVersionId = row.id;
       return this.config;
     } catch (err) {
-      throw new Error(`Failed to parse pipeline config: ${(err as Error).message}`);
+      throw new Error(`Failed to parse pipeline config from database: ${(err as Error).message}`);
     }
   }
 

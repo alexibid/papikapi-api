@@ -41,15 +41,15 @@ export class GeneratorController {
     return this.generatorService.synthesize(payload);
   }
 
-  @Get('api/v1/generator/progress/:name/latest')
-  getLatestProgress(@Param('name') name: string) {
-    const latest = this.progressService.getCurrentEvent(name);
-    return latest || { model: name, state: 'idle', message: 'No active job' };
+  @Get('api/v1/generator/progress/:id/latest')
+  getLatestProgress(@Param('id') id: string) {
+    const latest = this.progressService.getCurrentEvent(id);
+    return latest || { model: id, state: 'idle', message: 'No active job' };
   }
 
-  @Sse('api/v1/generator/progress/:name')
-  streamProgressV1(@Param('name') name: string): Observable<{ data: ProgressEvent }> {
-    return this.progressService.getStream(name).pipe(
+  @Sse('api/v1/generator/progress/:id')
+  streamProgressV1(@Param('id') id: string): Observable<{ data: ProgressEvent }> {
+    return this.progressService.getStream(id).pipe(
       map((event) => ({ data: event })),
     );
   }
@@ -70,7 +70,7 @@ export class GeneratorController {
 
   @Get('api/creator/progress')
   streamProgressLegacy(
-    @Query('name') name: string,
+    @Query('id') id: string,
     @Res() res: Response,
   ): void {
     res.writeHead(200, {
@@ -80,7 +80,7 @@ export class GeneratorController {
     });
     res.write(': connected\n\n');
 
-    const subscription = this.progressService.getStream(name || '').subscribe({
+    const subscription = this.progressService.getStream(id || '').subscribe({
       next: (event) => {
         res.write(`data: ${JSON.stringify(event)}\n\n`);
       },

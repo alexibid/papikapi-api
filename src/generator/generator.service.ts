@@ -14,15 +14,21 @@ import { ImageService } from './image/image.service.js';
 import { ProgressService } from './progress/progress.service.js';
 import { RunPodService } from './runpod/runpod.service.js';
 
+export interface FigureDisplayNamesPayload {
+  readonly pt: string;
+  readonly en: string;
+}
+
 export interface GenerateAlternativesPayload {
-  prompt: string;
-  name?: string;
-  images?: string[];
+  readonly prompt: string;
+  readonly id?: string;
+  readonly displayName?: FigureDisplayNamesPayload;
+  readonly images?: readonly string[];
 }
 
 export interface SynthesizePayload {
-  name: string;
-  pick: number | string;
+  readonly id: string;
+  readonly pick: number | string;
 }
 
 @Injectable()
@@ -43,7 +49,25 @@ export class GeneratorService {
       throw new BadRequestException('Prompt is required');
     }
 
-    const cleanName = this.resolveModelName(payload.name, payload.prompt);
+    const { CreatorService } = await import('../../scripts/shared/server/creator-service.js' as any);
+    const identity = CreatorService.resolveIdentity(payload);
+    const cleanName: string = identity.id;
+
+    try {
+      this.modelsService.recordPrompt(cleanName, payload.prompt);
+      const result = await CreatorService.generateAlternatives(identity, payload);
+      return {
+        success: true,
+        id: cleanName,
+        displayName: identity.displayName,
+        sheetUrl: `/api/v1/models/${cleanName}/sheet`,
+        ...result,
+      };
+    } catch (pipelineErr) {
+      this.logger.warn(`CreatorService pipeline alternative generation deferred to fallback: ${(pipelineErr as Error).message}`);
+    }
+
+    this.modelsService.recordPrompt(cleanName, payload.prompt);
     const stageDir = join(this.configService.resourceDir(cleanName), 'stage-1');
     const publicDir = this.configService.modelDir(cleanName);
 
@@ -92,14 +116,12 @@ export class GeneratorService {
       writeFileSync(stageFilePath, imageBuffer);
       writeFileSync(pubFilePath, imageBuffer);
 
-      // Save prompt metadata
-      writeFileSync(join(publicDir, 'prompt.txt'), payload.prompt, 'utf8');
-
       this.progressService.finish(cleanName, 'Alternatives generated successfully');
 
       return {
         success: true,
-        name: cleanName,
+        id: cleanName,
+        displayName: identity.displayName,
         sheetUrl: `/api/v1/models/${cleanName}/sheet`,
         executionTimeSec: result.executionTimeSec,
       };
@@ -111,15 +133,31 @@ export class GeneratorService {
   }
 
   public async synthesize(payload: SynthesizePayload) {
-    if (!payload.name) {
-      throw new BadRequestException('Model name is required');
+    if (!payload.id) {
+      throw new BadRequestException('Figure id is required');
     }
 
-    const cleanName = this.configService.cleanName(payload.name);
+    const cleanName = this.configService.cleanName(payload.id);
     const pick = Number(payload.pick);
 
     if (isNaN(pick) || pick < 1 || pick > 6) {
       throw new BadRequestException('Pick must be an integer between 1 and 6');
+    }
+
+    try {
+      const { CreatorService } = await import('../../scripts/shared/server/creator-service.js' as any);
+      const { cropResult, trellisResult } = await CreatorService.buildModel(cleanName, pick);
+      this.modelsService.syncCatalogue();
+      return {
+        success: true,
+        id: cleanName,
+        pick,
+        cached: trellisResult.cached ?? false,
+        artPath: cropResult.publicArtPath,
+        modelPath: `/models/${cleanName}/model.glb`,
+      };
+    } catch (pipelineErr) {
+      this.logger.warn(`CreatorService pipeline 3D synthesis deferred to fallback: ${(pipelineErr as Error).message}`);
     }
 
     const stage0Dir = join(this.configService.resourceDir(cleanName), 'stage-1');
@@ -128,7 +166,7 @@ export class GeneratorService {
     mkdirSync(stage0Dir, { recursive: true });
     mkdirSync(publicDir, { recursive: true });
 
-    this.progressService.begin(cleanName, ['s1-step-2', 's2-step-1']);
+    this.progressService.begin(cleanName, ['s1-step-2', 's2-step-2']);
 
     try {
       this.progressService.report(cleanName, 's1-step-2', `Cropping alternative #${pick}...`);
@@ -148,11 +186,11 @@ export class GeneratorService {
       writeFileSync(artPickPath, croppedArt);
       writeFileSync(artPubFinal, croppedArt);
 
-      this.progressService.report(cleanName, 's2-step-1', 'Reconstructing 3D mesh via TRELLIS...');
+      this.progressService.report(cleanName, 's2-step-2', 'Reconstructing 3D mesh via TRELLIS...');
 
       let trellisEndpointId = '';
       try {
-        const step3 = this.pipelineService.getStep('s2-step-1');
+        const step3 = this.pipelineService.getStep('s2-step-2');
         const envKey = (step3.serverless?.['env_endpoint_key'] as string) || 'RUNPOD_TRELLIS_ENDPOINT_ID';
         trellisEndpointId = this.runpodService.getEndpointId(envKey);
       } catch (err) {
@@ -181,20 +219,12 @@ export class GeneratorService {
       writeFileSync(pickGlbPath, glbBuffer);
       writeFileSync(finalGlbPath, glbBuffer);
 
-      // Save pick manifest
-      const manifestPath = join(stage0Dir, 's1-step-2-manifest.json');
-      writeFileSync(
-        manifestPath,
-        JSON.stringify({ status: 'DONE', data: { chosenPick: pick } }, null, 2),
-        'utf8',
-      );
-
       this.modelsService.syncCatalogue();
       this.progressService.finish(cleanName, '3D model synthesized successfully');
 
       return {
         success: true,
-        name: cleanName,
+        id: cleanName,
         pick,
         modelPath: `/models/${cleanName}/model.glb`,
         artPath: `/models/${cleanName}/art.jpeg`,
@@ -204,17 +234,5 @@ export class GeneratorService {
       this.progressService.fail(cleanName, msg);
       throw err;
     }
-  }
-
-  private resolveModelName(name?: string, prompt?: string): string {
-    const clean = this.configService.cleanName(name || '');
-    if (clean && clean !== 'model' && clean !== 'custom-model') {
-      return clean;
-    }
-    if (prompt) {
-      const derived = this.configService.cleanName(prompt.slice(0, 32));
-      if (derived) return derived;
-    }
-    return 'model';
   }
 }

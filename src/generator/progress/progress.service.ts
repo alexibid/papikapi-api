@@ -34,6 +34,47 @@ export class ProgressService {
   private readonly jobs = new Map<string, ProgressJob>();
   private readonly subjects = new Map<string, Subject<ProgressEvent>>();
 
+  constructor() {
+    void this.hookProgressHub();
+  }
+
+  private async hookProgressHub(): Promise<void> {
+    try {
+      const hubMod = await import('../../../scripts/shared/common/progress-hub.js' as any);
+      if (hubMod?.ProgressHub?.subscribeAll) {
+        hubMod.ProgressHub.subscribeAll((model: string, event: any) => {
+          this.emitHubEvent(model, event);
+        });
+      }
+    } catch {
+      // ProgressHub unavailable or running in isolated context
+    }
+  }
+
+  private getSubject(model: string): Subject<ProgressEvent> {
+    let subject = this.subjects.get(model);
+    if (!subject) {
+      subject = new Subject<ProgressEvent>();
+      this.subjects.set(model, subject);
+    }
+    return subject;
+  }
+
+  private emitHubEvent(model: string, event: any): void {
+    const enriched: ProgressEvent = {
+      model,
+      stepId: event.stepId,
+      message: event.message,
+      stepIndex: event.stepIndex,
+      stepCount: event.stepCount,
+      expectedSeconds: event.expectedSeconds,
+      elapsedInStepMs: event.elapsedInStepMs,
+      state: event.state,
+      stages: event.stages,
+    };
+    this.getSubject(model).next(enriched);
+  }
+
   public begin(model: string, stepIds: readonly string[]): void {
     const job: ProgressJob = {
       stepIds,

@@ -1,0 +1,18 @@
+meta {
+  name: One figure with its picks and previews
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/models/y8tt88g6
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.currentPick: eq 3
+  res.body.hasMesh: eq true
+  res.body.previews.length: eq 2
+}

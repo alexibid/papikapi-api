@@ -1,0 +1,22 @@
+meta {
+  name: Averages per step and estimate for 30 figures
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/v1/manifests/summary?figures=30
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.figures: gt 0
+  res.body.perFigure.seconds: gt 0
+  res.body.perFigure.costUsd: gt 0
+  res.body.estimate.figures: eq 30
+  res.body.steps.length: eq 14
+  res.body.spent.costUsd: gt 0
+  res.body.byDay.length: gt 0
+}

@@ -12,4 +12,6 @@ get {
 
 assert {
   res.status: eq 200
+  res.body.length: gt 50
+  res.body[0].previews: isArray
 }

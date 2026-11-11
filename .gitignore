@@ -5,6 +5,13 @@ node_modules/
 dist/
 *.tsbuildinfo
 
+# Local agent settings and worktrees
+.claude/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
 # Environment & secrets
 .env
 .env.*
@@ -17,3 +24,10 @@ Thumbs.db
 # Mount & local storage folders
 resources/
 public/models/
+backups/
+
+# Local debugging scripts and experiments
+scripts/shared/scratch/
+scripts/scratch/
+scratchpad/
+.debug-tmp

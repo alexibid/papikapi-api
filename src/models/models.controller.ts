@@ -47,46 +47,54 @@ export class ModelsController {
   }
 
   @Get('api/creator/info')
-  findOneLegacy(@Query('name') name: string): ModelDetailInfo {
-    return this.modelsService.findOne(name);
+  findOneLegacy(@Query('id') id: string): ModelDetailInfo {
+    return this.modelsService.findOne(id);
   }
 
   @Get('api/creator/sheet')
-  getSheetLegacy(@Query('name') name: string, @Res() res: Response): void {
-    this.getSheet(name, res);
+  getSheetLegacy(@Query('id') id: string, @Res() res: Response): void {
+    this.getSheet(id, res);
   }
 
   @Post('api/creator/delete')
   @HttpCode(HttpStatus.OK)
-  removeLegacy(@Body('name') name: string): { success: boolean; name: string } {
-    return this.modelsService.deleteModel(name);
+  removeLegacy(@Body('id') id: string): { success: boolean; id: string } {
+    return this.modelsService.deleteModel(id);
   }
 
-  @Get('api/v1/models/:name')
-  findOne(@Param('name') name: string): ModelDetailInfo {
-    return this.modelsService.findOne(name);
+  @Get('api/v1/models/:id')
+  findOne(@Param('id') id: string): ModelDetailInfo {
+    return this.modelsService.findOne(id);
   }
 
-  @Get('api/v1/models/:name/sheet')
-  getSheet(@Param('name') name: string, @Res() res: Response): void {
-    const sheet = this.modelsService.getSheet(name);
+  @Get('api/v1/models/:id/sheet')
+  getSheet(@Param('id') id: string, @Res() res: Response): void {
+    const sheet = this.modelsService.getSheet(id);
     res.setHeader('Content-Type', sheet.mime);
     res.setHeader('Content-Length', sheet.buffer.length);
     res.setHeader('Cache-Control', 'public, max-age=3600');
     res.send(sheet.buffer);
   }
 
-  @Get('api/v1/models/:name/mesh')
-  getMesh(@Param('name') name: string, @Res() res: Response): void {
-    const meshPath = this.modelsService.getMeshPath(name);
+  @Get('api/v1/models/:id/mesh')
+  getMesh(@Param('id') id: string, @Res() res: Response): void {
+    const meshPath = this.modelsService.getMeshPath(id);
     res.setHeader('Content-Type', 'model/gltf-binary');
     res.setHeader('Cache-Control', 'public, max-age=86400');
     const stream = createReadStream(meshPath);
     stream.pipe(res);
   }
 
-  @Delete('api/v1/models/:name')
-  remove(@Param('name') name: string): { success: boolean; name: string } {
-    return this.modelsService.deleteModel(name);
+  @Get(['models/:id/assembly.json', 'figures/:id/assembly.json', 'api/v1/models/:id/assembly'])
+  getAssembly(@Param('id') id: string, @Res() res: Response): void {
+    const plan = this.modelsService.getAssemblyPlan(id);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(plan);
+  }
+
+  @Delete('api/v1/models/:id')
+  remove(@Param('id') id: string): { success: boolean; id: string } {
+    return this.modelsService.deleteModel(id);
   }
 }

@@ -1,0 +1,15 @@
+meta {
+  name: Unknown sort is a 400
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v1/manifests?sort=colour
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}

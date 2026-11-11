@@ -18,6 +18,198 @@
         "cwd": "apps/papikapi-api"
       }
     },
+    "report": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/report/figure-report.ts",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "figure": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --force",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stages": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:1": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 1",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:1:step:1": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 1 --step s1-step-1",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:1:step:2": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 1 --step s1-step-2",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:1:step:3": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 1 --step s1-step-3",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:2": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 2",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:2:step:1": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 2 --step s2-step-1",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:2:step:2": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 2 --step s2-step-2",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:3": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 3",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:3:step:1": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-1",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:3:step:2": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-2",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:3:step:3": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-3",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:3:step:4": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-4",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:3:step:5": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-5",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:3:step:6": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 3 --step s3-step-6",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:4": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 4",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:4:step:1": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 4 --step s4-step-1",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:4:step:2": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 4 --step s4-step-2",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:5": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 5",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "stage:5:step:1": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/stage-orchestrator.ts --stage 5 --step s5-step-1",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "publish": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/publish-figures.ts --all",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "publish:figures": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsx scripts/shared/cli/publish-figures.ts",
+        "cwd": "apps/papikapi-api"
+      }
+    },
     "docker:build": {
       "executor": "nx:run-commands",
       "options": {
@@ -49,7 +241,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node -e 'console.log(\"papikapi-api: OK\")'",
+        "command": "npx vitest run -c vitest.scripts.config.mts && python3 scripts/stage-2/python/plane_mask_test.py && python3 scripts/stage-2/python/supports_test.py && python3 scripts/stage-2/python/holes_test.py && python3 scripts/stage-3/python/art_eye_test.py && /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P scripts/stage-3/blender/key_points/solid_shell_test.py",
         "cwd": "apps/papikapi-api"
       }
     },

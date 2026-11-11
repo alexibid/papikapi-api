@@ -1,5 +1,5 @@
 meta {
-  name: Get Manifests List
+  name: List figures (latest first)
   type: http
   seq: 1
 }
@@ -13,5 +13,9 @@ get {
 assert {
   res.status: eq 200
   res.body.total: gt 0
-  res.body.items: isDefined
+  res.body.limit: eq 20
+  res.body.items.length: lte 20
+  res.body.items[0].costUsd: isNumber
+  res.body.items[0].seconds: gt 0
+  res.body.items[0].createdAt: isString
 }

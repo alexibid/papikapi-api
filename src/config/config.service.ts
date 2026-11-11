@@ -6,27 +6,19 @@ import { join, resolve } from 'node:path';
 export class ApiConfigService {
   private readonly _resourcesDir: string;
   private readonly _modelsDir: string;
-  private readonly _pipelinePath: string;
 
   constructor() {
     const cwd = process.cwd();
-
-    // Resolve pipeline.json path
-    if (process.env['PAPIKAPI_PIPELINE_PATH']) {
-      this._pipelinePath = process.env['PAPIKAPI_PIPELINE_PATH'];
-    } else if (existsSync(join(cwd, 'pipeline.json'))) {
-      this._pipelinePath = join(cwd, 'pipeline.json');
-    } else {
-      this._pipelinePath = resolve(cwd, '../papikapi-studio/pipeline.json');
-    }
 
     // Resolve resources directory path
     if (process.env['PAPIKAPI_RESOURCES_DIR']) {
       this._resourcesDir = process.env['PAPIKAPI_RESOURCES_DIR'];
     } else if (existsSync(join(cwd, 'resources'))) {
       this._resourcesDir = join(cwd, 'resources');
+    } else if (existsSync(join(cwd, 'apps/papikapi-api/resources'))) {
+      this._resourcesDir = join(cwd, 'apps/papikapi-api/resources');
     } else {
-      this._resourcesDir = resolve(cwd, '../papikapi-studio/resources');
+      this._resourcesDir = resolve(cwd, 'resources');
     }
 
     // Resolve models directory path
@@ -34,8 +26,10 @@ export class ApiConfigService {
       this._modelsDir = process.env['PAPIKAPI_MODELS_DIR'];
     } else if (existsSync(join(cwd, 'public/models'))) {
       this._modelsDir = join(cwd, 'public/models');
+    } else if (existsSync(join(cwd, 'apps/papikapi-api/public/models'))) {
+      this._modelsDir = join(cwd, 'apps/papikapi-api/public/models');
     } else {
-      this._modelsDir = resolve(cwd, '../papikapi-studio/public/models');
+      this._modelsDir = resolve(cwd, 'public/models');
     }
   }
 
@@ -47,19 +41,11 @@ export class ApiConfigService {
     return this._modelsDir;
   }
 
-  get pipelinePath(): string {
-    return this._pipelinePath;
-  }
-
   get databasePath(): string {
     if (process.env['PAPIKAPI_DATABASE_PATH']) {
       return process.env['PAPIKAPI_DATABASE_PATH'];
     }
     return join(this._resourcesDir, 'papikapi.db');
-  }
-
-  get indexFile(): string {
-    return join(this._modelsDir, 'index.json');
   }
 
   modelDir(name: string): string {

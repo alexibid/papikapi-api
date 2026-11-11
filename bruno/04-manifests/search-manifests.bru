@@ -1,0 +1,17 @@
+meta {
+  name: Search figures by name
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/manifests?query=steve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.total: eq 1
+  res.body.items[0].id: eq fthr7of0
+}

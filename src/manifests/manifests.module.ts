@@ -1,21 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '../config/config.module.js';
 import { DatabaseModule } from '../database/database.module.js';
-import { MANIFEST_REPOSITORY } from './domain/manifest.repository.interface.js';
-import { DrizzleManifestRepository } from './infrastructure/drizzle-manifest.repository.js';
+import { PipelineModule } from '../pipeline/pipeline.module.js';
+import { ManifestStore } from './infrastructure/manifest-store.js';
+import { PublishedFiles } from './infrastructure/published-files.js';
 import { ManifestsController } from './manifests.controller.js';
 import { ManifestsService } from './manifests.service.js';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule],
+  imports: [ConfigModule, DatabaseModule, PipelineModule],
   controllers: [ManifestsController],
-  providers: [
-    ManifestsService,
-    {
-      provide: MANIFEST_REPOSITORY,
-      useClass: DrizzleManifestRepository,
-    },
-  ],
-  exports: [ManifestsService, MANIFEST_REPOSITORY],
+  providers: [ManifestsService, ManifestStore, PublishedFiles],
 })
 export class ManifestsModule {}

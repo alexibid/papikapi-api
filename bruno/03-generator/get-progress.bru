@@ -5,12 +5,12 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/api/v1/generator/progress/darth/latest
+  url: {{baseUrl}}/api/v1/generator/progress/d24q07eg/latest
   body: none
   auth: none
 }
 
 assert {
   res.status: eq 200
-  res.body.model: eq darth
+  res.body.model: eq d24q07eg
 }

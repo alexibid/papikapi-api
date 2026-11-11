@@ -1,0 +1,24 @@
+meta {
+  name: Figures updated in a date range
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/manifests?from=2026-11-01&to=2026-12-31&status=DONE
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("every figure is done and updated in range", function () {
+    for (const item of res.getBody().items) {
+      expect(item.status).to.equal("DONE");
+      expect(item.updatedAt >= "2026-11-01").to.equal(true);
+    }
+  });
+}

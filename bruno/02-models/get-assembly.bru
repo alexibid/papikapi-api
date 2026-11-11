@@ -1,0 +1,16 @@
+meta {
+  name: Assembly plan of one figure
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/models/y8tt88g6/assembly
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.pieces.length: gt 0
+}
