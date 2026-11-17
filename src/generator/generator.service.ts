@@ -3,13 +3,13 @@ import {
   Inject,
   Injectable,
   Logger,
-  NotFoundException,
 } from '@nestjs/common';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ApiConfigService } from '../config/config.service.js';
 import { ModelsService } from '../models/models.service.js';
 import { PipelineService } from '../pipeline/pipeline.service.js';
+import { loadCreatorService } from './creator-service.port.js';
 import { ImageService } from './image/image.service.js';
 import { ProgressService } from './progress/progress.service.js';
 import { RunPodService } from './runpod/runpod.service.js';
@@ -49,7 +49,7 @@ export class GeneratorService {
       throw new BadRequestException('Prompt is required');
     }
 
-    const { CreatorService } = await import('../../scripts/shared/server/creator-service.js' as any);
+    const CreatorService = await loadCreatorService();
     const identity = CreatorService.resolveIdentity(payload);
     const cleanName: string = identity.id;
 
@@ -145,7 +145,7 @@ export class GeneratorService {
     }
 
     try {
-      const { CreatorService } = await import('../../scripts/shared/server/creator-service.js' as any);
+      const CreatorService = await loadCreatorService();
       const { cropResult, trellisResult } = await CreatorService.buildModel(cleanName, pick);
       this.modelsService.syncCatalogue();
       return {

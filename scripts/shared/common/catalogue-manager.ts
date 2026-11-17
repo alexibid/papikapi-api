@@ -75,7 +75,7 @@ export class CatalogueManager {
             now,
           });
         }
-      } catch (dbErr) {
+      } catch {
         // Non-fatal if sqlite cannot be synced
       }
     }

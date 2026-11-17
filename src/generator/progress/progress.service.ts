@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Observable, Subject } from 'rxjs';
 
+const PROGRESS_HUB_MODULE = '../../../scripts/shared/common/progress-hub.js';
+
 export type ProgressState = 'running' | 'done' | 'failed';
 
 export interface StageSummary {
@@ -29,6 +31,14 @@ export interface ProgressJob {
   state: ProgressState;
 }
 
+type HubProgressEvent = Omit<ProgressEvent, 'model'>;
+
+interface ProgressHubModule {
+  readonly ProgressHub?: {
+    readonly subscribeAll?: (listener: (model: string, event: HubProgressEvent) => void) => unknown;
+  };
+}
+
 @Injectable()
 export class ProgressService {
   private readonly jobs = new Map<string, ProgressJob>();
@@ -40,9 +50,9 @@ export class ProgressService {
 
   private async hookProgressHub(): Promise<void> {
     try {
-      const hubMod = await import('../../../scripts/shared/common/progress-hub.js' as any);
+      const hubMod: ProgressHubModule = await import(PROGRESS_HUB_MODULE);
       if (hubMod?.ProgressHub?.subscribeAll) {
-        hubMod.ProgressHub.subscribeAll((model: string, event: any) => {
+        hubMod.ProgressHub.subscribeAll((model, event) => {
           this.emitHubEvent(model, event);
         });
       }
@@ -60,7 +70,7 @@ export class ProgressService {
     return subject;
   }
 
-  private emitHubEvent(model: string, event: any): void {
+  private emitHubEvent(model: string, event: HubProgressEvent): void {
     const enriched: ProgressEvent = {
       model,
       stepId: event.stepId,
@@ -118,11 +128,7 @@ export class ProgressService {
   }
 
   public getStream(model: string): Observable<ProgressEvent> {
-    let subject = this.subjects.get(model);
-    if (!subject) {
-      subject = new Subject<ProgressEvent>();
-      this.subjects.set(model, subject);
-    }
+    const subject = this.getSubject(model);
 
     return new Observable<ProgressEvent>((subscriber) => {
       // Emit current status immediately if job exists
@@ -131,7 +137,7 @@ export class ProgressService {
         subscriber.next(current);
       }
 
-      const subscription = subject!.subscribe(subscriber);
+      const subscription = subject.subscribe(subscriber);
       return () => subscription.unsubscribe();
     });
   }

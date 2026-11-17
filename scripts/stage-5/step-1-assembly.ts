@@ -59,7 +59,7 @@ export class AssemblyGenerator {
     const assemblyJson = JSON.stringify(document);
     const outputPath = join(stageDir, step.outputs.assembly_resource);
     writeFileSync(outputPath, assemblyJson, 'utf8');
-    const publicPath = join(publicDir, (step.outputs as any).assembly_public || 'assembly.json');
+    const publicPath = join(publicDir, step.outputs.assembly_public || 'assembly.json');
     writeFileSync(publicPath, assemblyJson, 'utf8');
     const seconds = Math.round(((Date.now() - start) / 1000) * 100) / 100;
 
