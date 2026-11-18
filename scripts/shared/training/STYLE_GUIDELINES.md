@@ -1,6 +1,6 @@
-# Papikapi Studio — Visual Style Guide & Agent Quality Evaluation Directives
+# Papikapi Studio — Visual Style Guide & Quality Evaluation Directives
 
-This document serves as the **single source of truth** and authoritative specification for the visual style of Papikapi Studio 3D models. It synthesizes the visual DNA across all 54 reference models in `scripts/shared/training/references/` (dogs, cats, safari, forest, ocean, dinosaurs, vehicles, games, minecraft) and defines the exact verification rubric that any evaluating agent must follow before approving an asset.
+This document serves as the **single source of truth** and authoritative specification for the visual style of Papikapi Studio 3D models. It synthesizes the visual DNA across all 54 reference models in `scripts/shared/training/references/` (dogs, cats, safari, forest, ocean, dinosaurs, vehicles, games, minecraft) and defines the exact verification rubric to follow before approving an asset.
 
 ---
 
@@ -71,9 +71,9 @@ Every model generation session produces a 1536x1024 sheet with exactly 6 cells (
 
 ---
 
-## 🔍 Part 3: Agent Validation Checklist & Scoring Rubric
+## 🔍 Part 3: Validation Checklist & Scoring Rubric
 
-The evaluating agent must run through this checklist before approving any generation batch:
+Run through this checklist before approving any generation batch:
 
 ### Mandatory Gate Checks (Pass / Fail)
 

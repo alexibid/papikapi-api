@@ -34,7 +34,7 @@ what was installed. The published image is the exact environment that just passe
    the base image, picks the matching `kaolin` and `xformers` wheels, and ends by verifying the imports.
 5. **Test** with `cp /root/rp_handler.trellis.py /root/trellis_lowpoly.py /app/ && PYTHONPATH=/app/trellis python /root/test.trellis.py /root/art-cutout.png /tmp/test.glb 500`.
    It prints the face count of the generated GLB. Do not publish if this fails.
-6. **Log in to the registry**, typed by the owner of the GitHub account, never by an agent. The token
+6. **Log in to the registry**. The token
    needs the `write:packages` scope:
    `read -rsp "GitHub token: " TOKEN; echo; printf "%s" "$TOKEN" | crane auth login ghcr.io -u alexibid --password-stdin`
 7. **Publish** with `python /root/package.trellis.py`. It writes the snapshot in layers of at most 3 GB,

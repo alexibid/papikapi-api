@@ -20,7 +20,7 @@ Every generated 3x2 alternatives sheet and individual pick (especially default P
 
 | Phase | Evaluator | Target Models | Status |
 | :--- | :--- | :--- | :--- |
-| **Phase 1** | **Antigravity (Native Visual Inspection)** | `dalmatian`, `german-shepherd`, `pug`, `blue-eyed-pug`, `golden-puppy` | 🟢 **COMPLETED (5/5)** |
+| **Phase 1** | **Visual Inspection** | `dalmatian`, `german-shepherd`, `pug`, `blue-eyed-pug`, `golden-puppy` | 🟢 **COMPLETED (5/5)** |
 | **Phase 3** | **Qwen2-VL (RunPod Serverless)** | Next 5 models | ⚪ Pending |
 
 ---
@@ -28,7 +28,7 @@ Every generated 3x2 alternatives sheet and individual pick (especially default P
 ## 📝 Iteration & Curation Log
 
 ### [Phase 1 - Model 01/05] Dalmatian (`dogs/dalmatian`)
-- **Evaluator**: Antigravity (Visual Inspection)
+- **Evaluator**: Visual Inspection
 - **Artifacts**:
   - Sheet: `public/models/dalmatian/alternatives.jpeg`
   - Pick #3: `public/models/dalmatian/art.jpeg`
@@ -41,7 +41,7 @@ Every generated 3x2 alternatives sheet and individual pick (especially default P
 - **Prompt Refinement Insights**: Anchoring the prompt with `metadata.jsonl` ground-truth descriptions completely eradicated the cropped bust issue and aligned FLUX.2 to full-body standing postures.
 
 ### [Phase 1 - Model 02/05] German Shepherd (`dogs/german-shepherd`)
-- **Evaluator**: Antigravity (Visual Inspection)
+- **Evaluator**: Visual Inspection
 - **Artifacts**:
   - Sheet: `public/models/german-shepherd/alternatives.jpeg`
   - Pick #3: `public/models/german-shepherd/art.jpeg`
@@ -54,7 +54,7 @@ Every generated 3x2 alternatives sheet and individual pick (especially default P
 - **Generation Performance**: 34.33s serverless execution on FLUX.2 worker.
 
 ### [Phase 1 - Model 03/05] Pug (`dogs/pug`)
-- **Evaluator**: Antigravity (Visual Inspection)
+- **Evaluator**: Visual Inspection
 - **Artifacts**:
   - Sheet: `public/models/pug/alternatives.jpeg`
   - Pick #3: `public/models/pug/art.jpeg`
@@ -67,7 +67,7 @@ Every generated 3x2 alternatives sheet and individual pick (especially default P
 - **Generation Performance**: 38.88s serverless execution on FLUX.2 worker.
 
 ### [Phase 1 - Model 04/05] Blue-Eyed Pug (`dogs/blue-eyed-pug`)
-- **Evaluator**: Antigravity (Visual Inspection)
+- **Evaluator**: Visual Inspection
 - **Artifacts**:
   - Sheet: `public/models/blue-eyed-pug/alternatives.jpeg`
   - Pick #3: `public/models/blue-eyed-pug/art.jpeg`
@@ -80,7 +80,7 @@ Every generated 3x2 alternatives sheet and individual pick (especially default P
 - **Generation Performance**: 44.80s serverless execution on FLUX.2 worker.
 
 ### [Phase 1 - Model 05/05] Golden Puppy (`dogs/golden-puppy`)
-- **Evaluator**: Antigravity (Visual Inspection)
+- **Evaluator**: Visual Inspection
 - **Artifacts**:
   - Sheet: `public/models/golden-puppy/alternatives.jpeg`
   - Pick #3: `public/models/golden-puppy/art.jpeg`

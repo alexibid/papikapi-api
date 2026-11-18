@@ -146,49 +146,49 @@ Stage 2 is only the TRELLIS result: nothing changes the model TRELLIS returns.
 
 ---
 
-## 🛡️ Sistema de Regressão Imediata e Otimização Segura
+## 🛡️ Immediate Regression System and Safe Optimisation
 
-Para permitir que a configuração do pipeline (`pipeline.json`) seja transferida para a base de dados e receba otimizações sem riscos de regressão em produção, o sistema segue **5 Pilares de Segurança**:
+To allow the pipeline configuration (`pipeline.json`) to live in the database and receive optimisations without regression risk in production, the system follows **5 Safety Pillars**:
 
 ```mermaid
 flowchart TD
-    A["Nova Otimização / Configuração"] --> B["1. Validação de Contrato (Zod Schema)"]
-    B -- "Rejeitado" --> C["Erro de Validação: Não altera a BD"]
-    B -- "Válido" --> D["2. Gravação Imutável (INSERT INTO pipeline_versions)"]
-    D --> E["3. Benchmark Automático (Golden Figures Gate)"]
-    E -- "Falha nas Métricas" --> F["Versão marcada como 'DRAFT_FAILED'"]
-    E -- "Aprovado em todas as figuras" --> G["4. Ativação Atómica (UPDATE active_version)"]
-    G --> H["5. Cache In-Memory atualizada nos Nós"]
-    H -- "Problema Detetado" --> I["Rollback Instantâneo em 1s (UPDATE active_version = vAnterior)"]
+    A["New Optimisation / Configuration"] --> B["1. Contract Validation (Zod Schema)"]
+    B -- "Rejected" --> C["Validation Error: Database untouched"]
+    B -- "Valid" --> D["2. Immutable Write (INSERT INTO pipeline_versions)"]
+    D --> E["3. Automatic Benchmark (Golden Figures Gate)"]
+    E -- "Metrics Failed" --> F["Version marked 'DRAFT_FAILED'"]
+    E -- "Passed on all figures" --> G["4. Atomic Activation (UPDATE active_version)"]
+    G --> H["5. In-Memory Cache refreshed on nodes"]
+    H -- "Issue Detected" --> I["Instant 1s Rollback (UPDATE active_version = previous)"]
 ```
 
-### 1. Imutabilidade e Versionamento Semântico
-* Configurações nunca são sobrescritas destrutivamente. Cada alteração recebe um novo identificador SemVer (`v1.0.0`, `v1.1.0`, etc.) na tabela `pipeline_versions`.
-* Cada figura na tabela `models` regista a `pipeline_version` exata com que foi gerada, garantindo total reprodutibilidade histórica.
+### 1. Immutability and Semantic Versioning
+* Configurations are never overwritten destructively. Every change gets a new SemVer identifier (`v1.0.0`, `v1.1.0`, etc.) in the `pipeline_versions` table.
+* Every figure in the `models` table records the exact `pipeline_version` it was generated with, guaranteeing full historical reproducibility.
 
-### 2. Validação Estrita por Schema (Zod Guard)
-* Nenhuma configuração entra na base de dados sem passar por validação estrita de tipos e intervalos:
-  - Dimensões, números de colunas/linhas, limites de compactação e tolerâncias angulares.
-  - Presença obrigatória de tags de interpolação nos prompts (`{plane_colour}`).
+### 2. Strict Schema Validation (Zod Guard)
+* No configuration enters the database without passing strict type and range validation:
+  - Dimensions, column/row counts, packing bounds and angular tolerances.
+  - Mandatory interpolation tags in prompts (`{plane_colour}`).
 
-### 3. Rollback Instantâneo em 1 Segundo
-* Caso uma nova otimização de parâmetros apresente comportamento indesejado em casos reais, o rollback não requer redeploy de código nem reinício de contentores:
+### 3. Instant 1-Second Rollback
+* If a new parameter optimisation misbehaves on real cases, rolling back requires no code redeploy and no container restart:
   ```sql
   UPDATE system_settings SET value = 'v1.0.0' WHERE key = 'active_pipeline_version';
   ```
-  Todos os processos e requisições voltam imediatamente à versão estável anterior.
+  Every process and request immediately returns to the previous stable version.
 
-### 4. Portão de Regressão Automático ("Golden Figures Benchmark")
-* Antes de uma versão ser ativada (`active = 1`), o runner de regressão executa testes contra as **figuras canónicas de controlo**:
-  - **Alex:** Validação de quinas retas a 90°, sem chanfrados, folga entre pernas e atlas 2048x2048.
-  - **Mario:** Validação de curvatura orgânica, dobras e cores de alta densidade.
-  - **Creeper:** Validação de padrões de textura pixelizada e proporções.
-  - **Pikachu & Sonic:** Validação de membros finos e partes curvas.
-* Se qualquer figura falhar as métricas de qualidade (`watertight == true`, `openEdges == 0`, `volumeDeviation < 15%`), a versão é recusada.
+### 4. Automatic Regression Gate ("Golden Figures Benchmark")
+* Before a version is activated (`active = 1`), the regression runner tests it against the **canonical control figures**:
+  - **Alex:** Straight 90° corners, no chamfers, leg clearance and 2048x2048 atlas.
+  - **Mario:** Organic curvature, folds and high-density colours.
+  - **Creeper:** Pixelated texture patterns and proportions.
+  - **Pikachu & Sonic:** Thin limbs and curved parts.
+* If any figure fails the quality metrics (`watertight == true`, `openEdges == 0`, `volumeDeviation < 15%`), the version is rejected.
 
-### 5. Sincronização e Distribuição Atómica
-* Ao iniciar, o `papikapi-api` verifica a integridade da versão ativa na base de dados SQLite (`papikapi.db`).
-* Alterações podem ser sincronizadas via endpoint administrativo assinado (`POST /api/v1/system/pipeline-sync`), atualizando os parâmetros em tempo real.
+### 5. Atomic Synchronisation and Distribution
+* On startup, `papikapi-api` checks the integrity of the active version in the SQLite database (`papikapi.db`).
+* Changes can be synchronised through a signed administrative endpoint (`POST /api/v1/system/pipeline-sync`), updating parameters in real time.
 
 ---
 
@@ -197,42 +197,42 @@ flowchart TD
 ### Running the Pipeline CLI
 
 ```bash
-# Executar a pipeline completa para um modelo (ex: Alex)
+# Run the full pipeline for a model (e.g. Alex)
 npx tsx scripts/shared/cli/stage-orchestrator.ts --model alex
 
-# Executar a partir de um estágio específico (ex: Stage 3 em diante)
+# Run from a specific step onwards (e.g. Stage 3 onwards)
 npx tsx scripts/shared/cli/stage-orchestrator.ts --model alex --from-step s3-step-1 --pick 1
 
-# Executar apenas um estágio isolado
+# Run a single isolated stage
 npx tsx scripts/shared/cli/stage-orchestrator.ts --model alex --stage 3
 
-# Reconstruir e verificar compilação TypeScript
+# Rebuild and check TypeScript compilation
 npm run build
 ```
 
 ### Running the Containerized API (Docker)
 
 ```bash
-# Iniciar a API com montagem dos volumes de media e SQLite
+# Start the API mounting the media and SQLite volumes
 docker compose up -d --build
 
-# Verificação de logs
+# Check the logs
 docker logs -f papikapi-api
 ```
 
-A API fica disponível nas seguintes portas:
-* **Porta 4505:** REST API e documentação Swagger (`http://localhost:4505/api/docs`).
-* **Porta 4500 & 4502:** Mapeadas diretamente para o contentor para compatibilidade total com o `papikapi` e ferramentas satélite.
+The API is available on the following ports:
+* **Port 4505:** REST API and Swagger documentation (`http://localhost:4505/api/docs`).
+* **Ports 4500 & 4502:** Mapped directly to the container for full compatibility with `papikapi` and companion tools.
 
-### Principais Endpoints da API
+### Main API Endpoints
 
-* `GET /api/v1/models`: Lista o catálogo de modelos com miniaturas a partir da base de dados.
-* `GET /models/:id/assembly.json`: Serve dinamicamente o plano de montagem a partir de `models.assembly_plan`.
-* `GET /api/v1/models/:id/mesh`: Faz streaming binário do `model.glb`.
-* `GET /api/v1/models/:id/sheet`: Faz streaming binário do PDF `sheets.pdf`.
-* `POST /api/creator/generate`: Desencadeia a geração de alternativas (FLUX.2).
-* `POST /api/creator/pick`: Seleciona a variação e avança na síntese 3D.
-* `GET /api/creator/progress?name=:name`: Server-Sent Events (SSE) com progresso em tempo real.
-* `GET /api/v1/manifests`: Lista das figuras com estado, tempo, custo e datas, com pesquisa (código, nome, assunto, prompt), filtros por estado e datas, ordenação e paginação.
-* `GET /api/v1/manifests/:id`: Manifesto completo de uma figura: cada passo pela ordem da pipeline, cada execução (`step_runs`), totais, datas e ficheiros publicados.
-* `GET /api/v1/manifests/summary?figures=N`: Tempo e custo médios por passo e por figura, estimativa para N figuras e gasto real por dia.
+* `GET /api/v1/models`: Lists the model catalogue with thumbnails from the database.
+* `GET /models/:id/assembly.json`: Dynamically serves the assembly plan from `models.assembly_plan`.
+* `GET /api/v1/models/:id/mesh`: Streams the binary `model.glb`.
+* `GET /api/v1/models/:id/sheet`: Streams the binary `sheets.pdf`.
+* `POST /api/creator/generate`: Triggers the alternatives generation (FLUX.2).
+* `POST /api/creator/pick`: Picks the variation and proceeds with 3D synthesis.
+* `GET /api/creator/progress?name=:name`: Server-Sent Events (SSE) with real-time progress.
+* `GET /api/v1/manifests`: Lists figures with status, time, cost and dates, with search (id, name, subject, prompt), status and date filters, sorting and pagination.
+* `GET /api/v1/manifests/:id`: Full manifest for one figure: every step in pipeline order, every execution (`step_runs`), totals, dates and published files.
+* `GET /api/v1/manifests/summary?figures=N`: Average time and cost per step and per figure, estimate for N figures and actual daily spend.
