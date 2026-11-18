@@ -1,0 +1,901 @@
+{
+  "system": "auto",
+  "workspace": {
+    "models_dir": "public/models",
+    "resources_dir": "resources",
+    "models_from": "resources/*/stage-1/step-2-art.jpeg",
+    "sheet_language": "pt",
+    "sheet_translations": "scripts/stage-4/sheet-translations.json"
+  },
+  "pricing": {
+    "runpod_trellis_usd_per_sec": 0.00069,
+    "runpod_flux_usd_per_sec": 0.00015,
+    "local_processing_usd": 0,
+    "flux_models": {
+      "black-forest-labs/FLUX.2-klein-4B": 0.00015
+    }
+  },
+  "pipeline_stages": [
+    {
+      "stage": "Stage 1: 3D Papercraft Figure Alternatives & Selection",
+      "steps": [
+        {
+          "id": "s1-step-1",
+          "name": "Alternatives Sheet Generation",
+          "label": "ALTERNATIVES",
+          "emoji": "🎨",
+          "expected_seconds": 20,
+          "script": "scripts/stage-1/step-1-alternatives.ts",
+          "models_from": "resources/*/stage-1/step-2-art.jpeg",
+          "skip_if_outputs_exist": true,
+          "serverless": {
+            "env_endpoint_key": "RUNPOD_FLUX_ENDPOINT_ID",
+            "container_image": "ghcr.io/alexibid/papikapi-flux:latest",
+            "min_workers": 0,
+            "max_workers": 2,
+            "idle_timeout_seconds": 5,
+            "client_timeout_seconds": 900,
+            "gpu_vram": "24GB",
+            "api_url_pattern": "https://api.runpod.ai/v2/{endpoint_id}/runsync",
+            "async_url_pattern": "https://api.runpod.ai/v2/{endpoint_id}/run",
+            "status_url_pattern": "https://api.runpod.ai/v2/{endpoint_id}/status/{job_id}"
+          },
+          "parameters": {
+            "default_model": "black-forest-labs/FLUX.2-klein-4B",
+            "fallback_model": "black-forest-labs/FLUX.2-klein-4B",
+            "inference_engine": "flux2-klein",
+            "aspect_ratio": "3:2",
+            "columns": 3,
+            "rows": 2,
+            "alternatives_count": 6,
+            "max_reference_images": 3,
+            "plane_palette": {
+              "black": "#202020",
+              "blue": "#2E5BD8",
+              "red": "#D33A2C",
+              "green": "#2E9E4F",
+              "orange": "#F08A24",
+              "purple": "#7B4FC2",
+              "yellow": "#F2C230"
+            }
+          },
+          "messages": {
+            "start": "[Stage 1: Step 1] Generating 3x2 alternatives sheet for {model}",
+            "completed": "[Stage 1: Step 1] Alternatives sheet generated in {duration}s"
+          },
+          "stage_dir": "stage-1",
+          "outputs": {
+            "sheet_resource": "step-1-alternatives.jpeg",
+            "manifest": "step-1-manifest.json",
+            "allowed_extensions": [
+              ".jpeg",
+              ".jpg",
+              ".png",
+              ".webp"
+            ],
+            "sheet_public": "alternatives.jpeg",
+            "public_url_pattern": "/models/{model}/alternatives.jpeg"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "seconds": "duration",
+            "costUsd": 0.00015,
+            "costNote": "FLUX.2-klein-4B Inference ($0.00015)",
+            "data": {
+              "prompt": "prompt",
+              "referenceCount": "referenceImages.length",
+              "alternativesCount": 6,
+              "format": "result.mime"
+            }
+          }
+        },
+        {
+          "id": "s1-step-2",
+          "name": "Pick & Crop Alternative",
+          "label": "PICK",
+          "emoji": "✂️",
+          "expected_seconds": 1,
+          "script": "scripts/stage-1/step-2-pick.ts",
+          "stage_dir": "stage-1",
+          "depends_on": {
+            "step_id": "s1-step-1",
+            "stage_dir": "stage-1"
+          },
+          "inputs": {
+            "stage_dir": "stage-1",
+            "sheet_resource": "step-1-alternatives.jpeg",
+            "sheet_resource_prefix": "step-1-alternatives",
+            "allowed_extensions": [
+              ".jpeg",
+              ".jpg",
+              ".png",
+              ".webp"
+            ],
+            "sheet_public": "alternatives.jpeg",
+            "sheet_public_prefix": "alternatives"
+          },
+          "outputs": {
+            "stage_dir": "stage-1",
+            "art_resource": "step-2-art.jpeg",
+            "manifest": "step-2-manifest.json",
+            "allowed_extensions": [
+              ".jpeg",
+              ".jpg",
+              ".png",
+              ".webp"
+            ],
+            "art_public": "art.jpeg",
+            "art_pick_resource_pattern": "step-2-art-pick-{pick}.jpeg",
+            "art_pick_public_pattern": "art-pick-{pick}.jpeg",
+            "public_url_pattern": "/models/{model}/art.jpeg"
+          },
+          "parameters": {
+            "default_pick": 3,
+            "jpeg_quality": 95,
+            "columns": 3,
+            "rows": 2
+          },
+          "messages": {
+            "start": "[Stage 1: Step 2] Picking and cropping chosen alternative #{pick} for {model}",
+            "completed": "[Stage 1: Step 2] Alternative #{pick} cropped and saved to step-2-art.jpeg in {duration}s"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "seconds": "duration",
+            "costUsd": 0,
+            "costNote": "Local CPU Image Processing ($0.00)",
+            "data": {
+              "chosenPick": "pick",
+              "artSize": "croppedBuffer.length"
+            }
+          }
+        },
+        {
+          "id": "s1-step-3",
+          "name": "Upscale Art",
+          "label": "UPSCALE",
+          "emoji": "🔍",
+          "expected_seconds": 10,
+          "script": "scripts/stage-1/step-3-upscale.ts",
+          "stage_dir": "stage-1",
+          "depends_on": {
+            "step_id": "s1-step-2",
+            "stage_dir": "stage-1"
+          },
+          "models_from": "resources/*/stage-1/step-2-art.jpeg",
+          "inputs": {
+            "stage_dir": "stage-1",
+            "art_resource": "step-2-art.jpeg"
+          },
+          "outputs": {
+            "stage_dir": "stage-1",
+            "upscaled_resource": "step-3-upscaled.webp",
+            "manifest": "step-3-manifest.json"
+          },
+          "parameters": {
+            "python_script": "scripts/stage-1/python/upscale.py",
+            "super_resolution": {
+              "binary": "~/.papikapi-tools/realesrgan-full/realesrgan-ncnn-vulkan",
+              "model": "realesrgan-x4plus-anime",
+              "scale": 4
+            }
+          },
+          "messages": {
+            "start": "[Stage 1: Step 3] Upscaling the chosen art of {model}",
+            "completed": "✔ [Stage 1: Step 3] Art of {model} upscaled with {method} in {duration}s ($0.00)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "costUsd": 0,
+            "costNote": "Local CPU Image Processing ($0.00)"
+          }
+        }
+      ]
+    },
+    {
+      "stage": "Stage 2: 3D Model Generation",
+      "steps": [
+        {
+          "id": "s2-step-1",
+          "name": "TRELLIS Input",
+          "label": "TRELLIS-IN",
+          "emoji": "🖼️",
+          "expected_seconds": 20,
+          "script": "scripts/stage-2/step-1-trellis-input.ts",
+          "stage_dir": "stage-2",
+          "depends_on": {
+            "step_id": "s1-step-3",
+            "stage_dir": "stage-1"
+          },
+          "models_from": "resources/*/stage-1/step-3-upscaled.webp",
+          "inputs": {
+            "stage_dir": "stage-1",
+            "art_resource": "step-3-upscaled.webp"
+          },
+          "outputs": {
+            "stage_dir": "stage-2",
+            "cutout_resource": "step-1-figure-cutout.webp",
+            "trellis_input_resource": "step-1-art-cutout.webp",
+            "manifest": "step-1-manifest.json"
+          },
+          "parameters": {
+            "python_script": "scripts/stage-2/python/trellis_input.py",
+            "image_size": 1024
+          },
+          "messages": {
+            "start": "[Stage 2: Step 1] Cutting {model} out of the upscaled art for TRELLIS (SAM + ViTMatte)",
+            "completed": "✔ [Stage 2: Step 1] TRELLIS input ready for {model} in {duration}s ($0.00)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "costUsd": 0,
+            "costNote": "Local CPU Image Processing ($0.00)"
+          }
+        },
+        {
+          "id": "s2-step-2",
+          "name": "3D Generation",
+          "label": "3D-GLB",
+          "emoji": "🧊",
+          "expected_seconds": 250,
+          "script": "scripts/stage-2/step-2-trellis.ts",
+          "stage_dir": "stage-2",
+          "depends_on": {
+            "step_id": "s2-step-1",
+            "stage_dir": "stage-2"
+          },
+          "models_from": "resources/*/stage-2/step-1-art-cutout.webp",
+          "runpod_console": "https://console.runpod.io/serverless",
+          "serverless": {
+            "env_endpoint_key": "RUNPOD_TRELLIS_ENDPOINT_ID",
+            "container_image": "ghcr.io/alexibid/papikapi-trellis2:latest",
+            "min_workers": 0,
+            "max_workers": 3,
+            "idle_timeout_seconds": 5,
+            "client_timeout_seconds": 1200,
+            "gpu_vram": "24GB",
+            "api_url_pattern": "https://api.runpod.ai/v2/{endpoint_id}/runsync",
+            "async_url_pattern": "https://api.runpod.ai/v2/{endpoint_id}/run",
+            "status_url_pattern": "https://api.runpod.ai/v2/{endpoint_id}/status/{job_id}"
+          },
+          "inputs": {
+            "stage_dir": "stage-2",
+            "trellis_input_resource": "step-1-art-cutout.webp",
+            "allowed_extensions": [
+              ".png"
+            ]
+          },
+          "outputs": {
+            "stage_dir": "stage-2",
+            "model_resource": "step-2-3d.glb",
+            "preview_resource": "step-2-preview.webp",
+            "manifest": "step-2-manifest.json",
+            "model_public": "model.glb",
+            "model_pick_resource_pattern": "step-2-3d-pick-{pick}.glb",
+            "public_url_pattern": "/models/{model}/model.glb"
+          },
+          "engine": {
+            "model": "microsoft/TRELLIS.2-4B",
+            "type": "image-to-3d",
+            "notes": "Same build and settings as the official Space (huggingface.co/spaces/microsoft/TRELLIS.2): resolution 1024, random seed, decimation 500000, texture 2048."
+          },
+          "parameters": {
+            "seed": "random",
+            "resolution": "1024",
+            "decimation_target": 500000,
+            "texture_size": 2048,
+            "plinth": {
+              "flatten_tolerance_ratio": 0.03,
+              "edge_inset_ratio": 0.01,
+              "margin_ratio": 0.12,
+              "sheet_thickness_ratio": 0.02,
+              "sheet_gap_ratio": 0.015,
+              "sheet_span_ratio": 1.3,
+              "weld_epsilon": 1e-05,
+              "fragment_min_triangles": 30,
+              "fragment_min_thickness_ratio": 0.01,
+              "plinth_hue_min_deg": 5,
+              "plinth_hue_max_deg": 40,
+              "plinth_min_saturation": 0.3,
+              "plinth_min_value": 0.3
+            },
+            "quality_gate": {
+              "python_script": "scripts/stage-2/python/trellis_gate.py",
+              "max_attempts": 3,
+              "overlap_min": 0.8,
+              "parts_max": 1,
+              "extra_part_penalty": 0.05,
+              "parts_grid": 96,
+              "part_min_share": 0.01,
+              "camera_grid_px": 128,
+              "camera_yaw_range_deg": [
+                -180,
+                175,
+                5
+              ],
+              "camera_pitch_range_deg": [
+                -10,
+                40,
+                5
+              ],
+              "camera_points_max": 60000
+            }
+          },
+          "runner": {
+            "platform": "RunPod Serverless",
+            "device": "NVIDIA RTX PRO 6000 Blackwell Serverless Worker",
+            "rate": "$0.00069/s ($2.49/hr active, $0.00 idle)"
+          },
+          "messages": {
+            "start": "[Stage 2: Step 2] Generating 3D model for {model}",
+            "progress": "⟳ [{runner}] Generating 3D Mesh on {device}... ({elapsed}s elapsed)",
+            "completed": "✔ [{runner}] 3D Model generated: {sizeMb} MB in {duration}s (${costUsd})",
+            "cache_hit": "⚡ [Cache Hit] Restored 3D Model for pick #{pick} from local cache (0.0s, $0.0000)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "seconds": "duration",
+            "costUsd": "costUsd",
+            "costNote": "RunPod Serverless ($0.00069/s)",
+            "cache_cost_note": "Restored from local pick cache",
+            "metrics": {
+              "fileSize": "buffer.length",
+              "faceCount": "result.output.face_count"
+            },
+            "data": {
+              "fileSize": "buffer.length",
+              "format": "model/gltf-binary",
+              "chosenPick": "pick",
+              "cached": false,
+              "device": "NVIDIA RTX PRO 6000 Blackwell Serverless Worker",
+              "parameters": {
+                "seed": "seed",
+                "resolution": "resolution",
+                "decimation_target": "decimation_target",
+                "texture_size": "texture_size"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stage": "Stage 3: Simplify and Optimize",
+      "steps": [
+        {
+          "id": "s3-step-1",
+          "name": "Simplify",
+          "label": "SIMPLIFY",
+          "emoji": "📐",
+          "expected_seconds": 20,
+          "script": "scripts/stage-3/step-1-simplify.ts",
+          "stage_dir": "stage-3",
+          "depends_on": {
+            "step_id": "s2-step-2",
+            "stage_dir": "stage-2"
+          },
+          "models_from": "resources/*/stage-2/step-2-3d.glb",
+          "blender": {
+            "executable": "/Applications/Blender.app/Contents/MacOS/Blender",
+            "script": "scripts/stage-3/blender/key_points/key_points.py"
+          },
+          "inputs": {
+            "stage_dir": "stage-2",
+            "model_resource": "step-2-3d.glb",
+            "model_pick_resource_pattern": "step-2-3d-pick-{pick}.glb",
+            "art_stage_dir": "stage-2",
+            "art_resource": "step-1-art-cutout.webp"
+          },
+          "outputs": {
+            "stage_dir": "stage-3",
+            "model_resource": "step-1-simplify.glb",
+            "points_resource": "step-1-simplify.json",
+            "manifest": "step-1-manifest.json"
+          },
+          "parameters": {
+            "target_faces": 480,
+            "max_faces": 1200,
+            "face_growth": 1.25,
+            "max_volume_change_percent": 25,
+            "max_dimension_change_percent": 15,
+            "min_inner_wall_share": 0.3,
+            "remesh_voxel_ratio": 0.0015,
+            "max_closing_deviation_ratio": 0.02,
+            "weld_distance_ratio": 1e-05,
+            "contact_height_ratio": 0.02,
+            "quad_face_angle_deg": 20,
+            "quad_shape_angle_deg": 60,
+            "face_max_extent_ratio": 0.5,
+            "box_voxel_resolution": 192,
+            "box_plane_merge_ratio": 0.01,
+            "box_plane_min_area_ratio": 0.01,
+            "box_slab_footprint_ratio": 1.6,
+            "box_slab_max_thickness_ratio": 0.03,
+            "planar_voxel_ratio": 0.008,
+            "planar_smooth_iterations": 0,
+            "planar_smooth_factor": 0,
+            "planar_decimate_faces": 650,
+            "planar_dissolve_angle_deg": 6,
+            "planar_max_change_percent": 2,
+            "max_paper_faces": 400
+          },
+          "messages": {
+            "start": "[Stage 3: Step 1] Simplifying the shape into low-poly papercraft for {model}",
+            "completed": "✔ [Stage 3: Step 1] {meshFaces} faces ({quads} quads), volume {volume}% for {model} in {duration}s ($0.00)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "costNote": "Local Blender headless ($0.00)"
+          },
+          "eyes": {
+            "catchlight_value_min": 0.85,
+            "catchlight_saturation_max": 0.3,
+            "catchlight_area_max_ratio": 0.002,
+            "pupil_value_max": 0.45,
+            "pupil_distance_max": 0.22,
+            "core_reach_ratio": 8.0,
+            "core_min_radius_ratio": 2.0,
+            "band_ratio": 0.35,
+            "band_steps": 3,
+            "skin_distance_min": 0.25,
+            "fallback_reach_ratio": 5.0,
+            "eye_roundness_min": 0.38,
+            "eye_flatten_radius_ratio": 1.3,
+            "eye_degenerate_ratio": 0.02,
+            "camera_grid_px": 128,
+            "camera_yaw_range_deg": [
+              -180,
+              175,
+              5
+            ],
+            "camera_pitch_range_deg": [
+              -10,
+              40,
+              5
+            ],
+            "camera_overlap_min": 0.8,
+            "camera_points_max": 60000,
+            "symmetry_search_ratio": 0.15,
+            "eye_paint_reach_ratio": 2.5,
+            "eye_facing_min": 0.2,
+            "eye_surface_depth_ratio": 0.5,
+            "eye_match_window_ratio": 1.5,
+            "eye_match_pad_ratio": 0.25,
+            "eye_match_scales": [
+              0.6,
+              0.65,
+              0.7,
+              0.75,
+              0.8,
+              0.85,
+              0.9,
+              0.95,
+              1.0,
+              1.05,
+              1.1,
+              1.15,
+              1.2,
+              1.25,
+              1.3,
+              1.35,
+              1.4,
+              1.45,
+              1.5
+            ],
+            "eye_match_score_min": 0.4,
+            "eye_erase_ring_px": 2,
+            "camera_overlap_margin": 0.03,
+            "camera_likeness_cells": 32,
+            "pair_area_ratio_max": 2.5,
+            "pair_colour_distance_max": 0.12,
+            "eye_area_min_ratio": 0.0015,
+            "eye_rim_ratio": 0.4,
+            "eye_core_reach_ratio": 1.3,
+            "eye_core_colour_distance": 0.35,
+            "eye_core_area_max_ratio": 2.5,
+            "camera_other_side_margin": 0.12,
+            "rim_reach_ratio": 2.5,
+            "eye_seen_depth_ratio": 0.15,
+            "eye_match_distance_penalty": 0.15
+          }
+        },
+        {
+          "id": "s3-step-2",
+          "name": "TRELLIS Atlas",
+          "label": "TR-ATLAS",
+          "emoji": "🧵",
+          "expected_seconds": 5,
+          "script": "scripts/stage-3/step-2-trellis-atlas.ts",
+          "stage_dir": "stage-3",
+          "depends_on": {
+            "step_id": "s2-step-2",
+            "stage_dir": "stage-2"
+          },
+          "models_from": "resources/*/stage-2/step-2-3d.glb",
+          "blender": {
+            "executable": "/Applications/Blender.app/Contents/MacOS/Blender",
+            "script": "scripts/stage-3/blender/atlas/extract_trellis_atlas.py"
+          },
+          "inputs": {
+            "stage_dir": "stage-2",
+            "model_resource": "step-2-3d.glb"
+          },
+          "outputs": {
+            "stage_dir": "stage-3",
+            "atlas_resource": "step-2-atlas-trellis.webp",
+            "manifest": "step-2-manifest.json"
+          },
+          "messages": {
+            "start": "[Stage 3: Step 2] Saving the TRELLIS atlas of {model}",
+            "completed": "✔ [Stage 3: Step 2] TRELLIS atlas of {model} saved in {duration}s ($0.00)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "costNote": "Local Blender headless ($0.00)"
+          }
+        },
+        {
+          "id": "s3-step-3",
+          "name": "Texture Atlas",
+          "label": "ATLAS",
+          "emoji": "🗺️",
+          "expected_seconds": 30,
+          "script": "scripts/stage-3/step-3-atlas.ts",
+          "stage_dir": "stage-3",
+          "depends_on": {
+            "step_id": "s3-step-2",
+            "stage_dir": "stage-3"
+          },
+          "models_from": "resources/*/stage-3/step-1-simplify.glb",
+          "blender": {
+            "executable": "/Applications/Blender.app/Contents/MacOS/Blender",
+            "bake_script": "scripts/stage-3/blender/atlas/bake_atlas.py"
+          },
+          "inputs": {
+            "stage_dir": "stage-3",
+            "model_resource": "step-1-simplify.glb",
+            "points_resource": "step-1-simplify.json",
+            "detailed_stage_dir": "stage-2",
+            "detailed_model_resource": "step-2-3d.glb",
+            "art_stage_dir": "stage-2",
+            "art_resource": "step-1-art-cutout.webp",
+            "trellis_atlas_resource": "step-2-atlas-trellis.webp"
+          },
+          "outputs": {
+            "stage_dir": "stage-3",
+            "atlas_resource": "step-3-atlas.webp",
+            "uv_resource": "step-3-atlas.json",
+            "manifest": "step-3-manifest.json"
+          },
+          "bake": {
+            "resolution": 2048,
+            "uv_angle_limit_rad": 1.15,
+            "uv_island_margin": 0.004,
+            "reach_ratio": 0.03,
+            "island_border_px": 4
+          },
+          "messages": {
+            "start": "[Stage 3: Step 3] Pasting the art details on the TRELLIS atlas and drawing it on the simplified figure of {model}",
+            "completed": "✔ [Stage 3: Step 3] Atlas of {faces} faces with the art details for {model} in {duration}s ($0.00)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "costNote": "Local Blender headless and Python ($0.00)"
+          },
+          "colour_calibration": {
+            "sample_step_px": 4,
+            "edge_inset_px": 6,
+            "pairs_min": 500,
+            "flat_colour_distance": 0.03,
+            "dark_luminance_min": 0.03,
+            "channel_gain_range": [
+              0.75,
+              1.33
+            ],
+            "exposure_quantile": 0.75,
+            "exposure_range": [
+              0.8,
+              1.3
+            ],
+            "neutral_saturation": 0.35
+          }
+        },
+        {
+          "id": "s3-step-4",
+          "name": "Texturize",
+          "label": "TEXTURIZE",
+          "emoji": "🎨",
+          "expected_seconds": 10,
+          "script": "scripts/stage-3/step-4-texturize.ts",
+          "stage_dir": "stage-3",
+          "depends_on": {
+            "step_id": "s3-step-3",
+            "stage_dir": "stage-3"
+          },
+          "models_from": "resources/*/stage-3/step-3-atlas.webp",
+          "blender": {
+            "executable": "/Applications/Blender.app/Contents/MacOS/Blender",
+            "apply_script": "scripts/stage-3/blender/atlas/apply_atlas.py"
+          },
+          "inputs": {
+            "stage_dir": "stage-3",
+            "model_resource": "step-1-simplify.glb",
+            "atlas_resource": "step-3-atlas.webp",
+            "uv_resource": "step-3-atlas.json"
+          },
+          "outputs": {
+            "stage_dir": "stage-3",
+            "model_resource": "step-4-texturize.glb",
+            "model_public": "model.glb",
+            "manifest": "step-4-manifest.json"
+          },
+          "messages": {
+            "start": "[Stage 3: Step 4] Applying atlas texture to simplified figure for {model}",
+            "completed": "✔ [Stage 3: Step 4] Model textured for {model} in {duration}s ($0.00)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "costNote": "Local Blender headless ($0.00)"
+          }
+        },
+        {
+          "id": "s3-step-5",
+          "name": "White Plinth",
+          "label": "PLINTH",
+          "emoji": "🏛️",
+          "expected_seconds": 10,
+          "script": "scripts/stage-3/step-5-plinth.ts",
+          "stage_dir": "stage-3",
+          "depends_on": {
+            "step_id": "s3-step-4",
+            "stage_dir": "stage-3"
+          },
+          "models_from": "resources/*/stage-3/step-4-texturize.glb",
+          "blender": {
+            "executable": "/Applications/Blender.app/Contents/MacOS/Blender",
+            "script": "scripts/stage-3/blender/plinth/build_plinth.py"
+          },
+          "inputs": {
+            "stage_dir": "stage-3",
+            "mesh_resource": "step-1-simplify.json",
+            "model_resource": "step-4-texturize.glb"
+          },
+          "outputs": {
+            "stage_dir": "stage-3",
+            "mesh_resource": "step-5-plinth.json",
+            "model_resource": "step-5-plinth.glb",
+            "model_public": "model.glb",
+            "manifest": "step-5-manifest.json"
+          },
+          "parameters": {
+            "plinth_thickness_ratio": 0.05,
+            "plinth_slope_ratio": 0.02,
+            "plinth_margin_ratio": 0.008,
+            "face_max_extent_ratio": 0.5
+          },
+          "messages": {
+            "start": "[Stage 3: Step 5] Generating the white plinth for {model}",
+            "completed": "✔ [Stage 3: Step 5] White plinth generated ({faces} faces) for {model} in {duration}s ($0.00)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "costNote": "Local Blender headless ($0.00)"
+          }
+        },
+        {
+          "id": "s3-step-6",
+          "name": "Previews",
+          "label": "PREVIEWS",
+          "emoji": "🖼️",
+          "expected_seconds": 20,
+          "script": "scripts/stage-3/step-6-previews.ts",
+          "stage_dir": "stage-3",
+          "depends_on": {
+            "step_id": "s3-step-5",
+            "stage_dir": "stage-3"
+          },
+          "models_from": "resources/*/stage-3/step-5-plinth.glb",
+          "blender": {
+            "executable": "/Applications/Blender.app/Contents/MacOS/Blender",
+            "script": "scripts/stage-3/blender/previews/render_previews.py"
+          },
+          "inputs": {
+            "stage_dir": "stage-3",
+            "model_resource": "step-5-plinth.glb",
+            "art_stage_dir": "stage-2",
+            "art_resource": "step-1-art-cutout.webp",
+            "trellis_stage_dir": "stage-2",
+            "trellis_resource": "step-2-3d.glb"
+          },
+          "outputs": {
+            "stage_dir": "stage-3",
+            "three_quarter_public": "preview-three-quarter.webp",
+            "three_quarter_wire_public": "preview-three-quarter-wireframe.webp",
+            "manifest": "step-6-manifest.json"
+          },
+          "parameters": {
+            "size_px": 1024,
+            "frame_margin": 1.15,
+            "wire_thickness_ratio": 0.002,
+            "wire_colour": [
+              0.08,
+              0.08,
+              0.09
+            ],
+            "paper_colour": [
+              0.86,
+              0.86,
+              0.84
+            ],
+            "webp_quality": 82,
+            "studio_light": "paint.sl"
+          },
+          "messages": {
+            "start": "[Stage 3: Step 6] Rendering the previews of {model}",
+            "completed": "✔ [Stage 3: Step 6] Front and three-quarter previews of {model} in {duration}s ($0.00)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "costNote": "Local Blender ($0.00)"
+          }
+        }
+      ]
+    },
+    {
+      "stage": "Stage 4: Papercraft Unfolding",
+      "steps": [
+        {
+          "id": "s4-step-1",
+          "name": "Unfold Model",
+          "label": "UNFOLD",
+          "emoji": "📐",
+          "expected_seconds": 30,
+          "script": "scripts/stage-4/step-1-unfold.ts",
+          "stage_dir": "stage-4",
+          "depends_on": {
+            "step_id": "s3-step-5",
+            "stage_dir": "stage-3"
+          },
+          "models_from": "resources/*/stage-3/step-4-plinth.json",
+          "blender": {
+            "executable": "/Applications/Blender.app/Contents/MacOS/Blender",
+            "unfold_script": "scripts/stage-4/blender/unfold_model.py",
+            "render_script": "scripts/stage-4/blender/render_steps.py"
+          },
+          "inputs": {
+            "stage_dir": "stage-3",
+            "model_resource": "step-5-plinth.json"
+          },
+          "outputs": {
+            "stage_dir": "stage-4",
+            "net_resource": "step-1-net.json",
+            "manifest": "step-1-manifest.json"
+          },
+          "parameters": {
+            "target_size_mm": 300,
+            "weld_distance_mm": 0.05,
+            "min_face_area_mm2": 4,
+            "flatten_iterations": 100,
+            "piece_max_width_mm": 170,
+            "piece_max_height_mm": 245,
+            "piece_compactness": 0.7
+          },
+          "messages": {
+            "start": "[Stage 4: Step 1] Unfolding 3D model for {model}",
+            "completed": "✔ [Stage 4: Step 1] Model unfolded into {islands} parts for {model} in {duration}s ($0.00)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "costNote": "Local Blender headless ($0.00)"
+          }
+        },
+        {
+          "id": "s4-step-2",
+          "name": "Export Sheets",
+          "label": "SHEETS",
+          "emoji": "🖨️",
+          "expected_seconds": 30,
+          "script": "scripts/stage-4/step-2-sheets.ts",
+          "stage_dir": "stage-4",
+          "depends_on": {
+            "step_id": "s4-step-1",
+            "stage_dir": "stage-4"
+          },
+          "models_from": "resources/*/stage-4/step-1-net.json",
+          "blender": {
+            "executable": "/Applications/Blender.app/Contents/MacOS/Blender",
+            "unfold_script": "scripts/stage-4/blender/unfold_model.py",
+            "render_script": "scripts/stage-4/blender/render_steps.py",
+            "texture_script": "scripts/stage-4/blender/texture_pages.py"
+          },
+          "inputs": {
+            "stage_dir": "stage-4",
+            "net_resource": "step-1-net.json",
+            "texture_stage_dir": "stage-3",
+            "texture_model": "step-5-plinth.glb"
+          },
+          "outputs": {
+            "stage_dir": "stage-4",
+            "sheets_resource": "step-2-sheets.pdf",
+            "renders_dir": "step-2-renders",
+            "sheets_public": "sheets.pdf",
+            "public_url_pattern": "/models/{model}/sheets.pdf",
+            "manifest": "step-2-manifest.json"
+          },
+          "parameters": {
+            "page_width_mm": 210,
+            "page_height_mm": 297,
+            "margin_mm": 10,
+            "header_mm": 10,
+            "piece_gap_mm": 2,
+            "nesting_cell_mm": 1,
+            "tab_height_mm": 6,
+            "edge_number_mm": 2.6,
+            "min_edge_number_mm": 1.8,
+            "piece_label_mm": 4.5,
+            "image_size_px": 900,
+            "texture_dpi": 200,
+            "texture_bleed_mm": 1.5,
+            "texture_jpeg_quality": 95,
+            "cage_extrusion_ratio": 0.01,
+            "max_ray_distance_ratio": 0.03,
+            "bake_samples": 4
+          },
+          "messages": {
+            "start": "[Stage 4: Step 2] Building the assembly booklet for {model}",
+            "completed": "✔ [Stage 4: Step 2] {pages} A4 pages ({sheets} template sheets, {pieces} parts) for {model} in {duration}s ($0.00)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "costNote": "Local Blender headless ($0.00)"
+          }
+        }
+      ]
+    },
+    {
+      "stage": "Stage 5: Papercraft Assembly Animation",
+      "steps": [
+        {
+          "id": "s5-step-1",
+          "name": "Assembly Fold Plan",
+          "label": "ASSEMBLY",
+          "emoji": "🎬",
+          "expected_seconds": 5,
+          "script": "scripts/stage-5/step-1-assembly.ts",
+          "stage_dir": "stage-5",
+          "depends_on": {
+            "step_id": "s4-step-1",
+            "stage_dir": "stage-4"
+          },
+          "models_from": "resources/*/stage-4/step-1-net.json",
+          "inputs": {
+            "stage_dir": "stage-4",
+            "net_resource": "step-1-net.json",
+            "texture_stage_dir": "stage-3",
+            "texture_model": "step-4-texturize.glb"
+          },
+          "outputs": {
+            "stage_dir": "stage-5",
+            "assembly_resource": "step-1-assembly.json",
+            "assembly_public": "assembly.json",
+            "public_url_pattern": "/models/{model}/assembly.json",
+            "manifest": "step-1-manifest.json"
+          },
+          "parameters": {
+            "hinge_tolerance_mm": 2,
+            "tray_gap_mm": 20,
+            "tray_row_width_mm": 640
+          },
+          "messages": {
+            "start": "[Stage 5: Step 1] Planning the assembly animation for {model}",
+            "completed": "✔ [Stage 5: Step 1] {pieces} parts and {hinges} fold hinges planned for {model} in {duration}s ($0.00)"
+          },
+          "manifest_contract": {
+            "status": "DONE",
+            "costNote": "Local CPU geometry ($0.00)"
+          }
+        }
+      ]
+    }
+  ]
+}

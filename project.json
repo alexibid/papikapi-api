@@ -241,7 +241,15 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx vitest run -c vitest.scripts.config.mts && python3 scripts/stage-2/python/plane_mask_test.py && python3 scripts/stage-2/python/supports_test.py && python3 scripts/stage-2/python/holes_test.py && python3 scripts/stage-3/python/art_eye_test.py && /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P scripts/stage-3/blender/key_points/solid_shell_test.py",
+        "command": "npx vitest run -c vitest.scripts.config.mts",
+        "cwd": "apps/papikapi-api"
+      }
+    },
+    "test-native": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "npx vitest run -c vitest.native.config.mts && python3 scripts/stage-2/python/plane_mask_test.py && python3 scripts/stage-2/python/supports_test.py && python3 scripts/stage-2/python/holes_test.py && python3 scripts/stage-3/python/art_eye_test.py && /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P scripts/stage-3/blender/key_points/solid_shell_test.py",
         "cwd": "apps/papikapi-api"
       }
     },

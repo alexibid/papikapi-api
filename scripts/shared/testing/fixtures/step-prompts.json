@@ -1,0 +1,27 @@
+[
+  {
+    "id": "s1-step-1:default_pose",
+    "stepId": "s1-step-1",
+    "content": "Standing on all its legs with every foot, paw or wheel flat on the plane and the belly raised off the plane, never sitting, crouching or lying down."
+  },
+  {
+    "id": "s1-step-1:four_legged_pose",
+    "stepId": "s1-step-1",
+    "content": "Four-legged like the real animal: all four legs straight down to the plane, the body level and horizontal, never upright on its hind legs like a person, the front legs are legs, never arms."
+  },
+  {
+    "id": "s1-step-1:reference_rule",
+    "stepId": "s1-step-1",
+    "content": "Use the reference photo only for the subject's colours and markings, never for its pose or camera angle."
+  },
+  {
+    "id": "s1-step-1:supported_pose",
+    "stepId": "s1-step-1",
+    "content": "Held up above the plane by one short, thick, round paper column joined under the middle of its body, like a display model on its stand, the column in one solid colour that differs from both the plane and the figure: the column is the only part touching the plane, and no legs, feet or wheels are added."
+  },
+  {
+    "id": "s1-step-1:system",
+    "stepId": "s1-step-1",
+    "content": "The figure stands on one single flat sheet of plain matte {plane_colour} paper of zero thickness, exactly as wide and as long as the figure's own footprint, like a plinth, never wider, never a slab, box or pedestal, and no other paper anywhere in the picture; the paper casts no colour onto it. Low-poly faceted 3D papercraft model of the subject described above, built from simple closed geometric volumes of matte cardstock with clean planar folds and no black crease lines. Every fine detail (eyes, nose, mouth, markings) is painted flat on the facets as a 2D decal, never sculpted. The mouth is always closed and painted flat: no open jaw, no teeth, no tongue. Blocky or voxel characters are exactly six plain rectangular blocks (head, torso, two arms, two legs) with perfectly flat faces, like a Minecraft skin: their hair, scarf and belt are flat pixel patterns printed on those faces, so hair over the shoulders is pixels on the front of the torso block, never built as an extra block or flap. Exactly the anatomy of the subject: no extra or missing legs, tails or eyes, no clothing or accessories. Cute expressive eyes with round white catchlights. No thin protruding parts: no strands, antennae or spikes. Eye-level three-quarter view with the camera at body height, the whole figure in frame and upright. Seamless flat light grey #E5E5E5 background. Zero shadows. No text, letters or watermark."
+  }
+]
