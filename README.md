@@ -1,117 +1,107 @@
-# Papikapi API — Generative 3D Papercraft Service
+# Papikapi API
 
-Enterprise-grade NestJS REST API and headless 3D generative pipeline for creating printable, folded low-poly papercraft models from text prompts or reference images.
+NestJS API and headless generation pipeline for papikapi's printable papercraft figures. From a
+prompt or reference images it generates the art (FLUX.2), the 3D mesh (TRELLIS.2), a simplified
+low-poly model with its texture atlas, the unfolded 2D net, an A4 PDF booklet and the 3D assembly
+plan. It also scores diary sentences for the papikapi app.
 
----
+The full pipeline specification is in [PIPELINE.md](./PIPELINE.md).
 
-## 🌟 Key Capabilities
+This app is a submodule of [ibid-workspace](https://github.com/alexibid/ibid-workspace). It keeps
+its own `package.json` and dependencies.
 
-* **End-to-End Generative Pipeline:** From prompt/references (FLUX.2) to AI 3D synthesis (TRELLIS.2), watertight mesh reduction, full-fidelity texture preservation, automated 2D net unfolding, A4 PDF booklets, and interactive 3D assembly plans.
-* **Database-First Architecture:** Single source of truth in SQLite (`resources/papikapi.db`). Zero `.json` manifests or text files stored on disk.
-* **Dynamic Assembly & Model Serving:** Serves 3D GLBs, assembly plans (`assembly.json`), PDFs, and model catalogues directly from SQLite and media stores.
-* **Containerized Deployment:** Dockerized multi-port container (4505, 4500, 4502) with healthchecks and volume bindings.
-* **Instant Regression & Safe Updates System:** Implements a 5-pillar regression battery with Golden Figures verification, Zod schema validation, and 1-second atomic rollback.
+## Structure
 
----
-
-## 🏗️ Architecture
-
-```text
+```
 apps/papikapi-api/
-├── src/                          # NestJS REST API
-│   ├── database/                 # SQLite provider (better-sqlite3) & Drizzle ORM schema
-│   ├── generator/                # Generation SSE progress & worker triggers
-│   ├── manifests/                # Figure manifests: steps, runs, costs, times, estimates
-│   └── models/                   # Model catalogue, binary meshes, dynamic assembly plans
-├── scripts/                      # Headless Pipeline Orchestration (TypeScript)
-│   ├── common/                   # Database manifest manager, catalogue sync, path resolvers
-│   ├── stage-1/                  # Alternatives (FLUX.2), Pick, Trellis Input
-│   ├── stage-2/                  # 3D Synthesis (TRELLIS.2), Base Cut, Details
-│   ├── stage-3/                  # Simplify (no voxel remesh), Atlas Extraction, Plinth
-│   ├── stage-4/                  # Unfolding (2D net), Printable A4 Sheets Booklet
-│   └── stage-5/                  # 3D Assembly Animation Plan
-├── resources/                    # Development working area & SQLite database
-│   └── papikapi.db               # SQLite database in WAL mode
-├── public/models/                # Production media assets (.glb, .jpeg, .png, .pdf)
-├── Dockerfile                    # Multi-stage production container build
-├── docker-compose.yml            # Container orchestration with volume mounts
-├── PIPELINE.md                   # Full technical pipeline specification
-└── qa-stages.md                  # Quality gates & Golden Figures regression suite
+  src/                  NestJS API
+    database/           SQLite (better-sqlite3) and the Drizzle schema
+    models/             Model catalogue, meshes, sheets and assembly plans
+    generator/          Generation endpoints and progress (SSE)
+    manifests/          Per-figure steps, runs, time and cost, and the summary
+    pipeline/           The active pipeline configuration and its stages
+    behaviour/          Scores a diary sentence into behaviour domains and points
+    config/             Environment configuration
+  scripts/
+    stage-1/ … stage-5/ The pipeline steps (TypeScript, Python and Blender)
+    shared/             CLI orchestrator, common helpers, migrations, RunPod workers,
+                        reports, training notes, Docker and test helpers
+  resources/            Working area and the SQLite database (papikapi.db)
+  public/models/        Published media: .glb, images and .pdf
+  bruno/                Bruno collection for every endpoint
+  Dockerfile, docker-compose.yml
 ```
 
----
+| Stage | Does                                                |
+| :---- | :-------------------------------------------------- |
+| 1     | Art alternatives (FLUX.2), pick, upscale            |
+| 2     | TRELLIS input and 3D synthesis                      |
+| 3     | Simplification, atlas extraction, plinth            |
+| 4     | Unfolding into a 2D net and the printable A4 sheets |
+| 5     | The 3D assembly animation plan                      |
 
-## 🐳 Docker Deployment
+The GPU steps run on RunPod Serverless workers, billed per second of compute. See
+[scripts/shared/runpod/README.md](./scripts/shared/runpod/README.md).
 
-The API runs as a high-availability Docker container that forwards host ports `4505`, `4500`, and `4502` to internal port `4505`, allowing seamless backwards compatibility with older studio tools and web clients:
+## Data
 
-```bash
-# Build and start the container
-docker compose up -d --build
+SQLite is the single source of truth: models, step results (`model_stages`), every run of every
+step (`step_runs`, never overwritten) and the versioned pipeline configuration
+(`pipeline_versions`). A new configuration is validated with Zod before it is stored, and
+pointing `system_settings.active_pipeline_version` at an earlier version rolls back without a
+restart.
 
-# Inspect container health and logs
-docker logs -f papikapi-api
-```
+## Endpoints
 
-### Port Mapping
-* **`http://localhost:4505`**: Official NestJS REST API and OpenAPI Swagger documentation (`/api/docs`).
-* **`http://localhost:4500`**: Public media and dynamic asset routes (`/models/:id/assembly.json`, `/models/:id/model.glb`).
-* **`http://localhost:4502`**: Creator endpoints (`/api/creator/generate`, `/api/creator/pick`, `/api/creator/progress`).
+The API listens on port 4505 (`PORT` overrides it). Swagger is at
+`http://localhost:4505/api/docs`.
 
----
+| Method   | Path                                     | Does                                                                                                                                      |
+| :------- | :--------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`    | `/api/v1/health`                         | Service and GPU health                                                                                                                    |
+| `GET`    | `/api/v1/models` (also `/api/catalogue`) | Every model with its preview                                                                                                              |
+| `GET`    | `/api/v1/models/:id`                     | One model                                                                                                                                 |
+| `GET`    | `/api/v1/models/:id/mesh`                | The `model.glb`                                                                                                                           |
+| `GET`    | `/api/v1/models/:id/sheet`               | The A4 PDF                                                                                                                                |
+| `GET`    | `/models/:id/assembly.json`              | The assembly plan (also `/figures/:id/assembly.json`, `/api/v1/models/:id/assembly`)                                                      |
+| `POST`   | `/api/v1/models/sync`                    | Syncs the catalogue with the published media                                                                                              |
+| `DELETE` | `/api/v1/models/:id`                     | Deletes a model from the database and the disk                                                                                            |
+| `POST`   | `/api/v1/generator/alternatives`         | Generates the art alternatives                                                                                                            |
+| `POST`   | `/api/v1/generator/synthesize`           | Starts the 3D synthesis of the picked art                                                                                                 |
+| `GET`    | `/api/v1/generator/progress/:id/latest`  | Latest progress of a generation                                                                                                           |
+| `GET`    | `/api/v1/manifests`                      | Figures with status, time, cost and dates; filter, sort and page with `query`, `status`, `from`, `to`, `sort`, `order`, `limit`, `offset` |
+| `GET`    | `/api/v1/manifests/:id`                  | Every step and run of one figure, with totals and published files                                                                         |
+| `GET`    | `/api/v1/manifests/summary?figures=N`    | Average time and cost per step and figure, and an estimate for N figures                                                                  |
+| `GET`    | `/api/v1/pipeline/stages`                | Stages and steps in running order                                                                                                         |
+| `GET`    | `/api/v1/pipeline/config`                | The active pipeline configuration                                                                                                         |
+| `POST`   | `/api/behaviour/evaluate`                | Scores a sentence into behaviour domains and points                                                                                       |
+| `GET`    | `/api/behaviour/model/latest`            | The current behaviour model                                                                                                               |
 
-## 📡 Core API Endpoints
+The `/api/creator/*` routes (`generate`, `pick`, `progress`, `info`, `sheet`, `delete`, `sync`)
+remain for the studio's older client.
 
-| Method | Path | Description | Source |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/health` | Service and remote GPU healthcheck | In-memory |
-| `GET` | `/api/v1/models` | List all available models with previews | SQLite (`models`) |
-| `GET` | `/api/v1/models/:id` | Full model details and metadata | SQLite (`models`) |
-| `GET` | `/models/:id/assembly.json` | Dynamic assembly plan for 3D viewers | SQLite (`models.assembly_plan`) |
-| `GET` | `/figures/:id/assembly.json` | Alias for frontend client compatibility | SQLite (`models.assembly_plan`) |
-| `GET` | `/api/v1/models/:id/mesh` | Streams binary 3D model (`model.glb`) | Filesystem media |
-| `GET` | `/api/v1/models/:id/sheet` | Streams binary A4 assembly guide (`sheets.pdf`) | Filesystem media |
-| `POST` | `/api/creator/generate` | Generates 3x2 alternatives grid | RunPod FLUX.2 Worker |
-| `POST` | `/api/creator/pick` | Selects variation and initiates 3D synthesis | RunPod TRELLIS Worker |
-| `GET` | `/api/creator/progress` | Real-time Server-Sent Events (SSE) stream | ProgressHub |
-| `DELETE`| `/api/v1/models/:id` | Deletes model from DB and disk | SQLite & Filesystem |
-| `GET` | `/api/v1/manifests` | Figures with status, time, cost and dates; `query`, `status`, `from`, `to`, `sort` (name, created, updated, cost, seconds), `order`, `limit`, `offset` | SQLite (`models`, `model_stages`, `step_runs`) |
-| `GET` | `/api/v1/manifests/:id` | Full manifest of one figure: every step in pipeline order, every run, totals, dates, published files | SQLite & Filesystem |
-| `GET` | `/api/v1/manifests/summary?figures=N` | Average time and cost per step and per figure, estimate for N figures, spend by day, most expensive and slowest figures | SQLite (`model_stages`, `step_runs`) |
-| `GET` | `/api/v1/pipeline/stages` | Stages and steps in running order | SQLite (`pipeline_versions`) |
-| `GET` | `/api/v1/pipeline/config` | Full active pipeline configuration | SQLite (`pipeline_versions`) |
+## Commands
 
-Every step execution is recorded in `step_runs` (never overwritten), so spent time and cost include repeated runs; `model_stages` keeps the latest result of each step. The Bruno collection in `bruno/` covers every endpoint: `npx bru run --env local` from `bruno/`.
+Run from the workspace root.
 
-Interactive API documentation is available at `http://localhost:4505/api/docs`.
+| For                                              | Command                                                                              |
+| :----------------------------------------------- | :----------------------------------------------------------------------------------- |
+| Serve with reload (port 4505)                    | `npx nx serve papikapi-api`                                                          |
+| Compile                                          | `npx nx build papikapi-api`                                                          |
+| Unit tests                                       | `npx nx test papikapi-api`                                                           |
+| Native tests (Python and geometry)               | `npx nx test-native papikapi-api`                                                    |
+| Every endpoint through Bruno                     | `npm run api:test:bruno`                                                             |
+| Whole pipeline for a model, rerunning every step | `npx nx figure papikapi-api --model=<id>`                                            |
+| One stage or one step                            | `npx nx stage:3 papikapi-api --model=<id>` · `stage:3:step:1`                        |
+| Publish the figures                              | `npx nx publish papikapi-api`                                                        |
+| Figure report                                    | `npx nx report papikapi-api`                                                         |
+| Container                                        | `npm run api:docker:build` · `api:docker:up` · `api:docker:down` · `api:docker:logs` |
 
----
+The container is `papikapi-api`. It maps host ports 4505, 4500 and 4502 to the API's 4505, so
+older clients that used the studio's former ports keep working.
 
-## 💻 CLI Pipeline Execution
+## Quality gate
 
-```bash
-# Run complete pipeline for a model
-npx tsx scripts/shared/cli/stage-orchestrator.ts --model alex
-
-# Run specific stage (e.g. Stage 3: Simplify & Plinth)
-npx tsx scripts/shared/cli/stage-orchestrator.ts --model alex --stage 3
-
-# Run from a specific step onward
-npx tsx scripts/shared/cli/stage-orchestrator.ts --model alex --from-step s3-step-1 --pick 1
-
-# Compile TypeScript check
-npm run build
-```
-
----
-
-## 🛡️ Safe Updates & Instant Regression System
-
-To ensure that system configuration and heuristics can be updated through database changes without breaking production models or causing quality regressions:
-
-1. **Immutable Configuration Versions:** Configurations are versioned semantically (`pipeline_versions` table) and never overwritten in place.
-2. **Schema Contract Guard:** Incoming configurations are strictly validated with Zod before insertion.
-3. **1-Second Instant Rollback:** Pointing `system_settings.active_pipeline_version` to an earlier version restores previous behavior without requiring server restarts.
-4. **Golden Figures Benchmark:** Every release candidate must pass blocking quality gates (`openEdges == 0`, 0 chamfers on 90° edges, full-resolution atlas) across the 5 reference figures: **Alex**, **Mario**, **Creeper**, **Pikachu**, and **Sonic**.
-
-Refer to [qa-stages.md](qa-stages.md) and [PIPELINE.md](PIPELINE.md) for full quality thresholds and technical specifications.
+Before a pipeline change ships, the reference figures must pass the blocking checks in
+[PIPELINE.md](./PIPELINE.md): no open edges, no chamfers on 90° edges, and a full-resolution
+atlas.
