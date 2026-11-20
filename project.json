@@ -256,7 +256,7 @@
     "test:bruno": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "../../../node_modules/.bin/bru run -r --env local --exclude-tags=stream",
+        "command": "npx --yes @usebruno/cli run -r --env local --exclude-tags=stream",
         "cwd": "apps/papikapi-api/bruno"
       }
     }

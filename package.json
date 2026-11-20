@@ -32,7 +32,7 @@
     "publish": "tsx scripts/shared/cli/publish-figures.ts --all",
     "publish:figures": "tsx scripts/shared/cli/publish-figures.ts",
     "test:scripts": "vitest run --config vitest.scripts.config.mts",
-    "test:bruno": "../../node_modules/.bin/bru run -r bruno --env local"
+    "test:bruno": "npx --yes @usebruno/cli run -r bruno --env local"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.3.0",
@@ -53,7 +53,6 @@
     "@types/better-sqlite3": "^7.6.12",
     "@types/express": "^5.0.0",
     "@types/node": "^24.0.0",
-    "@usebruno/cli": "^4.3.0",
     "drizzle-kit": "^0.31.11",
     "typescript": "^5.5.0",
     "vitest": "^4.1.12"
