@@ -1,3 +1,9 @@
+## 0.1.2 (2026-11-20)
+
+### 🐛 Bug Fixes
+
+- **papikapi-api:** remove bruno cli dev dependency and add lockfile verifier tests (147ab5c)
+
 ## 0.1.1 (2026-11-18)
 
 ### 🐛 Bug Fixes
