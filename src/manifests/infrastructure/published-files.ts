@@ -1,7 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
+import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { ApiConfigService } from '../../config/config.service.js';
+import { DRIZZLE_DB } from '../../database/database.provider.js';
+import * as schema from '../../database/schema.js';
+import { modelsTable } from '../../database/schema.js';
 import { PipelineService } from '../../pipeline/pipeline.service.js';
 import type { PublishedFile } from '../domain/manifest.types.js';
 
@@ -19,14 +24,12 @@ const PUBLIC_FILES: readonly DeclaredFile[] = [
   { kind: 'sheets', stepId: 's4-step-2', output: 'sheets_public' },
 ];
 
-const ASSEMBLY_FILE = join('stage-5', 'step-1-assembly.json');
-
-/** The files a figure has published, named by the pipeline config, with their public link and size. */
 @Injectable()
 export class PublishedFiles {
   constructor(
     @Inject(ApiConfigService) private readonly configService: ApiConfigService,
     @Inject(PipelineService) private readonly pipelineService: PipelineService,
+    @Inject(DRIZZLE_DB) private readonly db: BetterSQLite3Database<typeof schema>,
   ) {}
 
   public of(modelId: string): readonly PublishedFile[] {
@@ -35,11 +38,24 @@ export class PublishedFiles {
       const name = this.pipelineService.getStep(declared.stepId).outputs?.[declared.output];
       if (typeof name !== 'string') return [];
       const path = join(modelDir, name);
-      return existsSync(path) ? [{ kind: declared.kind, url: `/models/${modelId}/${name}`, bytes: statSync(path).size }] : [];
+      return existsSync(path)
+        ? [{ kind: declared.kind, url: `/models/${modelId}/${name}`, bytes: statSync(path).size }]
+        : [];
     });
-    const assembly = join(this.configService.resourceDir(modelId), ASSEMBLY_FILE);
-    return existsSync(assembly)
-      ? [...published, { kind: 'assembly', url: `/api/v1/models/${modelId}/assembly`, bytes: statSync(assembly).size }]
+    const row = this.db
+      .select({ assemblyPlan: modelsTable.assemblyPlan })
+      .from(modelsTable)
+      .where(eq(modelsTable.id, modelId))
+      .get();
+    return row?.assemblyPlan && row.assemblyPlan.trim().length > 0
+      ? [
+          ...published,
+          {
+            kind: 'assembly',
+            url: `/api/v1/models/${modelId}/assembly`,
+            bytes: Buffer.byteLength(row.assemblyPlan, 'utf8'),
+          },
+        ]
       : published;
   }
 }

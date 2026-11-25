@@ -162,6 +162,19 @@ export class OutputCleaner {
           cleaned.push(basename(manifest));
         }
       }
+    } else if (step.id === 's5-step-1') {
+      for (const name of ['step-1-assembly.json', 'step-1-manifest.json']) {
+        const target = join(stageDir, name);
+        if (existsSync(target)) {
+          unlinkSync(target);
+          cleaned.push(basename(target));
+        }
+      }
+      const pubAssembly = join(publicDir, 'assembly.json');
+      if (existsSync(pubAssembly)) {
+        unlinkSync(pubAssembly);
+        cleaned.push(`public/${basename(pubAssembly)}`);
+      }
     }
 
     if (cleaned.length > 0) {
@@ -173,29 +186,40 @@ export class OutputCleaner {
     const resourceDir = WorkspacePaths.resourcePath(model);
     const publicDir = WorkspacePaths.modelPath(model);
     if (existsSync(resourceDir)) {
-      this.removeMatchingFiles(resourceDir, false);
+      this.purgeDirectory(resourceDir, (name, directory) => this.isResourceNonMedia(name, directory));
     }
     if (existsSync(publicDir)) {
-      this.removeMatchingFiles(publicDir, true);
+      this.purgeDirectory(publicDir, (name) => this.isCommonNonMedia(name) || name.endsWith('.json'));
     }
   }
 
-  private static removeMatchingFiles(directory: string, isPublic: boolean): void {
+  private static purgeDirectory(
+    directory: string,
+    shouldRemove: (entryName: string, parentDir: string) => boolean,
+  ): void {
     const entries = existsSync(directory) ? readdirSync(directory, { withFileTypes: true }) : [];
     for (const entry of entries) {
       const fullPath = join(directory, entry.name);
       if (entry.isDirectory()) {
-        this.removeMatchingFiles(fullPath, isPublic);
-      } else if (entry.isFile()) {
-        const isManifest = entry.name.endsWith('-manifest.json') || entry.name.endsWith('.manifest.json');
-        const isDebugTxt = entry.name.endsWith('.txt');
-        const isPublicJson = isPublic && entry.name.endsWith('.json');
-        if (isManifest || isDebugTxt || isPublicJson) {
-          try {
-            unlinkSync(fullPath);
-          } catch {}
-        }
+        this.purgeDirectory(fullPath, shouldRemove);
+      } else if (entry.isFile() && shouldRemove(entry.name, directory)) {
+        try {
+          unlinkSync(fullPath);
+        } catch {}
       }
     }
+  }
+
+  private static isResourceNonMedia(entryName: string, directory: string): boolean {
+    const isStage5Assembly = entryName === 'step-1-assembly.json' && basename(directory) === 'stage-5';
+    return this.isCommonNonMedia(entryName) || isStage5Assembly;
+  }
+
+  private static isCommonNonMedia(entryName: string): boolean {
+    return (
+      entryName.endsWith('-manifest.json') ||
+      entryName.endsWith('.manifest.json') ||
+      entryName.endsWith('.txt')
+    );
   }
 }

@@ -1,9 +1,11 @@
 import { existsSync, statSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import type { CliArguments } from '../cli/orchestrator.interface.js';
+import { AssemblyPlanStore } from './assembly-plan-store.js';
 import type { PipelineStep } from './interfaces/index.js';
 import { WorkspacePaths } from './workspace-paths.js';
 
+const ASSEMBLY_STEP_ID = 's5-step-1';
 const RESOURCE_SUFFIX = /_resource$/;
 const FALLBACK_PREFIX = 'fallback_';
 
@@ -66,6 +68,9 @@ export class StepInputs {
   }
 
   public static outputsPresent(model: string, step: PipelineStep): boolean {
+    if (step.id === ASSEMBLY_STEP_ID) {
+      return AssemblyPlanStore.has(model);
+    }
     const outputs: Record<string, unknown> = step.outputs;
     const directory = this.directoryOf(model, step, outputs);
     const extensions = this.allowedExtensions(outputs);
@@ -90,7 +95,6 @@ export class StepInputs {
       .map((key) => ({ key, name: String(section[key]) }));
   }
 
-  /** `fallback_<x>_resource` is accepted when `<x>_resource` does not exist (older figures). */
   private static fallbackOf(inputs: Record<string, unknown>, key: string): readonly string[] {
     const fallback = inputs[`${FALLBACK_PREFIX}${key}`];
     return typeof fallback === 'string' ? [fallback] : [];
@@ -136,6 +140,9 @@ export class StepInputs {
     step: PipelineStep,
     pick: number | null,
   ): boolean {
+    if (step.id === ASSEMBLY_STEP_ID) {
+      return false;
+    }
     const inputs: Record<string, unknown> = step.inputs ?? {};
     const outputs: Record<string, unknown> = step.outputs ?? {};
     const defaultDirectory = this.directoryOf(model, step, inputs);
