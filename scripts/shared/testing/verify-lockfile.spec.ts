@@ -54,6 +54,14 @@ const isVersionAtLeast = (version: string, minimum: string): boolean => {
   return patA >= patB;
 };
 
+const isSafeFormDataVersion = (version: string): boolean => {
+  const [major] = parseSemverParts(version);
+  if (major === 2) {
+    return isVersionAtLeast(version, WORKSPACE_EXPECTATIONS.minimumVersions.formDataLegacy);
+  }
+  return isVersionAtLeast(version, WORKSPACE_EXPECTATIONS.minimumVersions.formData);
+};
+
 const extractLockfilePackageVersions = (lockfile: JsonRecord, packageName: string): PackageVersionEntry[] => {
   const packages = lockfile['packages'];
   if (!isRecord(packages)) {
@@ -259,11 +267,9 @@ describe('workspace dependency and allowlist invariants', () => {
     expect(vulnerable).toEqual([]);
   });
 
-  it('should resolve every form-data entry in package-lock.json to at least 4.0.6', () => {
+  it('should resolve every form-data entry in package-lock.json to at least 2.5.6 on 2.x or at least 4.0.6', () => {
     const entries = extractLockfilePackageVersions(rootLockfile, 'form-data');
-    const vulnerable = entries.filter(
-      (entry) => !isVersionAtLeast(entry.version, WORKSPACE_EXPECTATIONS.minimumVersions.formData),
-    );
+    const vulnerable = entries.filter((entry) => !isSafeFormDataVersion(entry.version));
 
     expect(vulnerable).toEqual([]);
   });

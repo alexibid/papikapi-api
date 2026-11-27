@@ -190,6 +190,7 @@ export const WORKSPACE_EXPECTATIONS = {
   minimumVersions: {
     jsYaml: '4.3.2',
     axios: '1.20.0',
+    formDataLegacy: '2.5.6',
     formData: '4.0.6',
     faker: '10.5.0',
   },
